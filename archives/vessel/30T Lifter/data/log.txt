@@ -1,0 +1,316 @@
+[05:01:54.78][INFO] KSC link acquired
+[05:01:54.78][INFO] Loading specified class: 0
+[05:01:54.86][WARN] Class not specified
+[05:01:54.88][INFO] Skipping class includes...
+[05:01:54.92][INFO] Skipping class cmds...
+[Year 8 Day 371]
+[05:01:55.24][INFO] System boot complete
+[05:01:55.28][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:02:17.06][INFO] Registering class as: launch...
+[05:02:17.10][INFO] Successful
+[05:02:18.24][INFO] KSC link acquired
+[05:02:18.22][INFO] Loading specified class: 0
+[05:02:18.30][WARN] Class not specified
+[05:02:18.32][INFO] Skipping class includes...
+[05:02:18.36][INFO] Skipping class cmds...
+[Year 8 Day 371]
+[05:02:18.68][INFO] System boot complete
+[05:02:18.72][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:02:18.78][INFO] Registering class as: launch...
+[05:02:18.82][INFO] Successful
+[05:02:19.98][INFO] KSC link acquired
+[05:02:19.96][INFO] Loading specified class: 0
+[05:02:20.04][WARN] Class not specified
+[05:02:20.06][INFO] Skipping class includes...
+[05:02:20.10][INFO] Skipping class cmds...
+[Year 8 Day 371]
+[05:02:20.42][INFO] System boot complete
+[05:02:20.46][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:02:20.52][INFO] Registering class as: launch...
+[05:02:20.56][INFO] Successful
+[05:02:21.76][INFO] KSC link acquired
+[05:02:21.74][INFO] Loading specified class: 0
+[05:02:21.82][WARN] Class not specified
+[05:02:21.84][INFO] Skipping class includes...
+[05:02:21.88][INFO] Skipping class cmds...
+[Year 8 Day 371]
+[05:02:22.20][INFO] System boot complete
+[05:02:22.24][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:02:22.30][INFO] Registering class as: launch...
+[05:02:22.34][INFO] Successful
+[05:02:23.54][INFO] KSC link acquired
+[05:02:23.52][INFO] Loading specified class: 0
+[05:02:23.60][WARN] Class not specified
+[05:02:23.62][INFO] Skipping class includes...
+[05:02:23.66][INFO] Skipping class cmds...
+[Year 8 Day 371]
+[05:02:23.98][INFO] System boot complete
+[05:02:24.02][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:02:24.08][INFO] Registering class as: launch...
+[05:02:24.12][INFO] Successful
+[05:02:25.34][INFO] KSC link acquired
+[05:02:25.32][INFO] Loading specified class: 0
+[05:02:25.40][WARN] Class not specified
+[05:02:25.42][INFO] Skipping class includes...
+[05:02:25.46][INFO] Skipping class cmds...
+[Year 8 Day 371]
+[05:02:25.78][INFO] System boot complete
+[05:02:25.82][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:02:25.88][INFO] Registering class as: launch...
+[05:02:25.92][INFO] Successful
+[05:02:27.14][INFO] KSC link acquired
+[05:02:27.12][INFO] Loading specified class: 0
+[05:02:27.20][WARN] Class not specified
+[05:02:27.22][INFO] Skipping class includes...
+[05:02:27.26][INFO] Skipping class cmds...
+[Year 8 Day 371]
+[05:02:27.58][INFO] System boot complete
+[05:02:27.62][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:02:27.68][INFO] Registering class as: launch...
+[05:02:27.72][INFO] Successful
+[05:02:28.94][INFO] KSC link acquired
+[05:02:28.92][INFO] Loading specified class: 0
+[05:02:28.100][WARN] Class not specified
+[05:02:29.02][INFO] Skipping class includes...
+[05:02:29.06][INFO] Skipping class cmds...
+[Year 8 Day 371]
+[05:02:29.38][INFO] System boot complete
+[05:02:29.42][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:02:29.48][INFO] Registering class as: launch...
+[05:02:29.52][INFO] Successful
+[05:02:30.72][INFO] KSC link acquired
+[05:02:30.70][INFO] Loading specified class: 0
+[05:02:30.78][WARN] Class not specified
+[05:02:30.80][INFO] Skipping class includes...
+[05:02:30.84][INFO] Skipping class cmds...
+[Year 8 Day 371]
+[05:02:31.16][INFO] System boot complete
+[05:02:31.20][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:02:31.26][INFO] Registering class as: launch...
+[05:02:31.30][INFO] Successful
+[05:02:32.48][INFO] KSC link acquired
+[05:02:32.46][INFO] Loading specified class: 0
+[05:02:32.54][WARN] Class not specified
+[05:02:32.56][INFO] Skipping class includes...
+[05:02:32.60][INFO] Skipping class cmds...
+[Year 8 Day 371]
+[05:02:32.92][INFO] System boot complete
+[05:02:32.96][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:02:33.02][INFO] Registering class as: launch...
+[05:02:33.06][INFO] Successful
+[05:02:34.26][INFO] KSC link acquired
+[05:02:34.24][INFO] Loading specified class: 0
+[05:02:34.32][WARN] Class not specified
+[05:02:34.34][INFO] Skipping class includes...
+[05:02:34.38][INFO] Skipping class cmds...
+[Year 8 Day 371]
+[05:02:34.70][INFO] System boot complete
+[05:02:34.74][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:02:34.80][INFO] Registering class as: launch...
+[05:02:34.84][INFO] Successful
+[05:02:36.06][INFO] KSC link acquired
+[05:02:36.04][INFO] Loading specified class: 0
+[05:02:36.12][WARN] Class not specified
+[05:02:36.14][INFO] Skipping class includes...
+[05:02:36.18][INFO] Skipping class cmds...
+[Year 8 Day 371]
+[05:02:36.50][INFO] System boot complete
+[05:02:36.54][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:02:36.60][INFO] Registering class as: launch...
+[05:02:36.64][INFO] Successful
+[05:02:37.86][INFO] KSC link acquired
+[05:02:37.84][INFO] Loading specified class: 0
+[05:02:37.92][WARN] Class not specified
+[05:02:37.94][INFO] Skipping class includes...
+[05:02:37.98][INFO] Skipping class cmds...
+[Year 8 Day 371]
+[05:02:38.30][INFO] System boot complete
+[05:02:38.34][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:02:38.40][INFO] Registering class as: launch...
+[05:02:38.44][INFO] Successful
+[05:02:39.66][INFO] KSC link acquired
+[05:02:39.64][INFO] Loading specified class: 0
+[05:02:39.72][WARN] Class not specified
+[05:02:39.74][INFO] Skipping class includes...
+[05:02:39.78][INFO] Skipping class cmds...
+[Year 8 Day 371]
+[05:02:40.10][INFO] System boot complete
+[05:02:40.14][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:02:40.20][INFO] Registering class as: launch...
+[05:02:40.24][INFO] Successful
+[05:12:40.38][INFO] KSC link acquired
+[05:12:40.36][INFO] Loading specified class: 0
+[05:12:40.44][WARN] Class not specified
+[05:12:40.48][INFO] Skipping class includes...
+[05:12:40.52][INFO] Skipping class cmds...
+[Year 8 Day 371]
+[05:12:40.82][INFO] System boot complete
+[05:12:40.88][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:12:40.94][INFO] Registering class as: launch...
+[05:12:40.98][INFO] Successful
+[05:12:42.16][INFO] KSC link acquired
+[05:12:42.14][INFO] Loading specified class: launch
+[05:12:43.34][INFO] System boot complete
+[05:12:43.38][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:12:43.44][INFO] Registering class as: launch...
+[05:12:43.48][INFO] Failed. New class is same as previous class: launch
+[05:12:43.60][INFO] Instruction run complete for init (0ms)
+[05:12:43.66][INFO] slope: -0.00105882352941176
+[05:12:43.70][INFO] Instruction run complete for launch (0.04ms)
+[05:12:43.90][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:12:40.82][INFO] KSC link acquired
+[05:12:40.80][INFO] Loading specified class: 0
+[05:12:40.88][WARN] Class not specified
+[05:12:40.92][INFO] Skipping class includes...
+[05:12:40.96][INFO] Skipping class cmds...
+[Year 8 Day 371]
+[05:12:41.26][INFO] System boot complete
+[05:12:41.32][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:12:41.38][INFO] Registering class as: launch...
+[05:12:41.42][INFO] Successful
+[05:12:42.62][INFO] KSC link acquired
+[05:12:42.60][INFO] Loading specified class: launch
+[05:12:43.80][INFO] System boot complete
+[05:12:43.84][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:12:43.90][INFO] Registering class as: launch...
+[05:12:43.94][INFO] Failed. New class is same as previous class: launch
+[05:12:44.06][INFO] Instruction run complete for init (0ms)
+[05:12:44.12][INFO] slope: -0.00105882352941176
+[05:12:44.16][INFO] Instruction run complete for launch (0.04ms)
+[05:12:44.36][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:14:56.60][INFO] PLF detached @ 50km
+[05:15:10.52][INFO] suborbital ascent complete
+[05:12:41.20][INFO] KSC link acquired
+[05:12:41.18][INFO] Loading specified class: 0
+[05:12:41.26][WARN] Class not specified
+[05:12:41.30][INFO] Skipping class includes...
+[05:12:41.34][INFO] Skipping class cmds...
+[Year 8 Day 371]
+[05:12:41.64][INFO] System boot complete
+[05:12:41.70][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:13:33.84][INFO] Registering class as: launch...
+[05:13:33.86][INFO] Successful
+[05:13:35.02][INFO] KSC link acquired
+[05:13:34.100][INFO] Loading specified class: launch
+[05:13:36.18][INFO] System boot complete
+[05:13:36.22][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:13:36.28][INFO] Registering class as: launch...
+[05:13:36.32][INFO] Failed. New class is same as previous class: launch
+[05:13:36.44][INFO] Instruction run complete for init (0ms)
+[05:13:36.50][INFO] slope: -0.00105882352941176
+[05:13:36.54][INFO] Instruction run complete for launch (0.04ms)
+[05:13:36.74][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:12:41.76][INFO] KSC link acquired
+[05:12:41.74][INFO] Loading specified class: 0
+[05:12:41.82][WARN] Class not specified
+[05:12:41.86][INFO] Skipping class includes...
+[05:12:41.90][INFO] Skipping class cmds...
+[Year 8 Day 371]
+[05:12:42.20][INFO] System boot complete
+[05:12:42.26][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:13:17.96][INFO] Registering class as: launch...
+[05:13:17.98][INFO] Successful
+[05:13:19.18][INFO] KSC link acquired
+[05:13:19.16][INFO] Loading specified class: launch
+[05:13:20.36][INFO] System boot complete
+[05:13:20.40][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:13:20.46][INFO] Registering class as: launch...
+[05:13:20.50][INFO] Failed. New class is same as previous class: launch
+[05:13:20.62][INFO] Instruction run complete for init (0ms)
+[05:13:20.68][INFO] slope: -0.00105882352941176
+[05:13:20.72][INFO] Instruction run complete for launch (0.04ms)
+[05:13:20.92][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:15:33.16][INFO] PLF detached @ 50km
+[05:12:42.18][INFO] KSC link acquired
+[05:12:42.16][INFO] Loading specified class: 0
+[05:12:42.24][WARN] Class not specified
+[05:12:42.28][INFO] Skipping class includes...
+[05:12:42.32][INFO] Skipping class cmds...
+[Year 8 Day 371]
+[05:12:42.62][INFO] System boot complete
+[05:12:42.68][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:12:42.74][INFO] Registering class as: launch...
+[05:12:42.78][INFO] Successful
+[05:12:43.92][INFO] KSC link acquired
+[05:12:43.90][INFO] Loading specified class: launch
+[05:12:45.06][INFO] System boot complete
+[05:12:45.10][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:12:45.16][INFO] Registering class as: launch...
+[05:12:45.20][INFO] Failed. New class is same as previous class: launch
+[05:12:45.32][INFO] Instruction run complete for init (0ms)
+[05:12:45.38][INFO] slope: -0.00105882352941176
+[05:12:45.42][INFO] Instruction run complete for launch (0.04ms)
+[05:12:45.62][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:14:57.86][INFO] PLF detached @ 50km
+[05:15:11.92][INFO] suborbital ascent complete
+[05:26:07.98][INFO] KSC link acquired
+[05:26:07.96][INFO] Loading specified class: launch
+[05:26:09.16][INFO] System boot complete
+[05:26:09.20][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[03:39:58.16][INFO] KSC link acquired
+[03:39:58.14][INFO] Loading specified class: launch
+[Year 8 Day 372]
+[03:39:59.32][INFO] System boot complete
+[03:39:59.36][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[03:44:06.14][INFO] KSC link acquired
+[03:44:06.12][INFO] Loading specified class: launch
+[Year 8 Day 372]
+[03:44:07.34][INFO] System boot complete
+[03:44:07.38][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[03:44:06.20][INFO] KSC link acquired
+[03:44:06.18][INFO] Loading specified class: launch
+[Year 8 Day 372]
+[03:44:07.38][INFO] System boot complete
+[03:44:07.42][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[03:44:06.22][INFO] KSC link acquired
+[03:44:06.20][INFO] Loading specified class: launch
+[03:44:06.16][INFO] KSC link acquired
+[03:44:06.14][INFO] Loading specified class: launch
+[03:44:15.62][INFO] KSC link acquired
+[03:44:15.60][INFO] Loading specified class: launch
+[Year 8 Day 372]
+[03:44:16.82][INFO] System boot complete
+[03:44:16.86][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[03:48:52.36][INFO] KSC link acquired
+[03:48:52.34][INFO] Loading specified class: launch
+[03:43:03.37][INFO] KSC link acquired
+[03:43:03.35][INFO] Loading specified class: launch
+[Year 8 Day 377]
+[03:43:04.59][INFO] System boot complete
+[03:43:04.63][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:26:08.04][INFO] KSC link acquired
+[05:26:08.02][INFO] Loading specified class: launch
+[05:26:09.20][INFO] System boot complete
+[05:26:09.24][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:26:09.30][INFO] Registering class as: launch...
+[05:26:09.34][INFO] Failed. New class is same as previous class: launch
+[05:26:09.46][INFO] Instruction run complete for init (0ms)
+[05:26:09.52][INFO] slope: -0.00105882352941176
+[05:26:09.56][INFO] Instruction run complete for launch (0.06ms)
+[05:26:08.08][INFO] KSC link acquired
+[05:26:08.06][INFO] Loading specified class: launch
+[05:26:09.22][INFO] System boot complete
+[05:26:09.26][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[05:26:07.100][INFO] KSC link acquired
+[05:26:07.98][INFO] Loading specified class: launch
+[05:26:09.16][INFO] System boot complete
+[05:26:09.20][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[00:00:12.75][INFO] KSC link acquired
+[00:00:12.73][INFO] Loading specified class: launch
+[Year 8 Day 372]
+[00:00:13.95][INFO] System boot complete
+[00:00:13.99][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[00:26:06.89][INFO] KSC link acquired
+[00:26:06.87][INFO] Loading specified class: launch
+[00:56:05.94][INFO] KSC link acquired
+[00:56:05.92][INFO] Loading specified class: launch
+[Year 8 Day 374]
+[00:56:07.10][INFO] System boot complete
+[00:56:07.14][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[03:34:06.13][INFO] KSC link acquired
+[03:34:06.11][INFO] Loading specified class: launch
+[Year 8 Day 374]
+[03:34:07.29][INFO] System boot complete
+[03:34:07.33][INFO] Looking in archive for: /vessel/30T Lifter/30T Lifter.ops
+[03:34:06.15][INFO] KSC link acquired
+[03:34:06.13][INFO] Loading specified class: launch

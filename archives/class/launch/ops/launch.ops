@@ -1,0 +1,6 @@
+class:launch
+set:dir:90
+set:alt:80
+set:deorbitAlt:30
+run:init
+run:launch
