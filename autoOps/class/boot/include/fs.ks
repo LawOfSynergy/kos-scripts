@@ -1,4 +1,4 @@
-parameter kscRoot is "/autoOps", localRoot is "", initReqDirs is list("/boot", "/data", "/mem", "/ops", "/cmd", "/includes", "/test").
+parameter kscRoot is "/autoOps", localRoot is "", initReqDirs is list("/boot", "/data", "/mem", "/ops", "/cmd", "/include", "/test").
 
 require("console").
 //optional dependency on 'persist' - enables json file types
@@ -17,7 +17,7 @@ if defined boot {
     if boot:hasSuffix("launchNum") set launchNum to boot:launchNum.
 }
 
-local logger to console:getLogger().
+local logger to console:logger().
 set fsModule:logger to logger.
 
 //archive paths are available via the following constants
@@ -50,6 +50,8 @@ set fsModule:ksc:profileFor to {
         set launch:reloadFlag to launch:root + "/reload".
         set launch:ops to launch:root + "/ops".
         set launch:boot to launch:root + "/boot.ksm".
+        set profile:data to launch:root + "/data".
+        return launch.
     }.
     return profile.
 }.
@@ -60,7 +62,7 @@ set fsModule:ksc:ship to fsModule:ksc:profile:local:launch(launchNum).
 set fsModule:reqDirs to list().
 
 for dir in initReqDirs {
-    fsModule:reqDirs:append(localRoot + dir).
+    fsModule:reqDirs:add(localRoot + dir).
 }
 
 set fsModule:reqDirCheck to {
@@ -347,11 +349,12 @@ local function walk {
     callback(dir).
 
     for descriptor in dir:lex:values {
-        logger:debug("invoking callback for " + descriptor).
-        callback(descriptor).
         if not descriptor:isFile {
             logger:debug("recursing into directory " + descriptor).
             walk(vol, fsModule:toPathString(path(descriptor)), callback).
+        } else {
+            logger:debug("invoking callback for " + descriptor).
+            callback(descriptor).
         }
     }
 
@@ -451,7 +454,7 @@ set fsModule:compile to {
 
     local compiler is {
         parameter f.
-        compile path(f).
+        compile fs:toPathString(path(f)).
     }.
 
     fsModule:visit(vol, start, fsModule:isSrc@, compiler@).
@@ -487,3 +490,4 @@ set fsModule:printTree to {
 }.
 
 global fs is fsModule.
+register("fs", fs, {return defined fs.}).

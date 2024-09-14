@@ -1,3 +1,7 @@
-print addons:kpm.
-print addons:kpm:buttons.
-print addons:kpm:flags.
+@lazyGlobal off.
+
+local logger is console:logger().
+
+logger:info(addons:kpm).
+logger:info(addons:kpm:buttons).
+logger:info(addons:kpm:flags).

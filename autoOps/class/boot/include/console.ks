@@ -18,10 +18,10 @@ local function addLogLevel {
     set level:logAt to {
         parameter logger, text, toConsole is logger.toConsole.
         local writer is logger:factory:get().
-        writer(text, value, logger:level, toConsole AND writer <> consoleModule:printWriter). //prevent double-printing
+        writer(text, level, logger:level, toConsole AND writer <> consoleModule:printWriter). //prevent double-printing
     }.
 
-    consoleModule:level:append(level).
+    consoleModule:level:add(name, level).
 }
 
 addLogLevel("NONE", -1).
@@ -38,7 +38,7 @@ set consoleModule:unboundWriter to {
     parameter toConsole is true.
 
     //filter out messages below our current display threshold
-    if level:value > loggerLevel {
+    if level:value > loggerLevel:value {
         return.
     }
 
@@ -73,7 +73,7 @@ set consoleModule:conditionalFactory to {
         wrapper:factories:insert(0, fragment).
     }.
     set wrapper:get to {
-        for fragment in factories {
+        for fragment in wrapper:factories {
             if fragment:condition() return fragment:factory().
         }
         return defaultWriter.
@@ -114,7 +114,7 @@ set consoleModule:logger to {
     set logger:factory to writerFactory.
     set logger:toConsole to toConsole.
 
-    for loglevel in consoleModule:level {
+    for loglevel in consoleModule:level:values {
         if(logLevel <> consoleModule:level:none) {
             set logger[loglevel:name] to loglevel:logAt:bind(logger).
         }
@@ -124,3 +124,4 @@ set consoleModule:logger to {
 }.
 
 global console is consoleModule.
+register("console", console, {return defined console.}).

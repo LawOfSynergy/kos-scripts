@@ -3,18 +3,18 @@
 local setup is {runPath("/include/console").}.
 local teardown is {unset console.}.
 
-set noDeps to test:create(
+local noDeps is test:create(
     "test_console_no_dependencies"
 ).
 
-local function test {
+local function tst {
     parameter module, name, exec, set is setup, tear is teardown.
     return module:test(name, exec, set, tear).
 }
 
-test(noDeps, "ensure_4_logLevels", {
+tst(noDeps, "ensure_4_logLevels", {
     assert(defined console, "'console' does not exist").
-    assert(console:hasSuffix("level", "'console' missing member 'level'")).
+    assert(console:hasSuffix("level"), "'console' missing member 'level'").
     local function validateLogLevel {
         parameter name, level.
         assert(console:level:hasSuffix(name), "'level' missing member '" + name + "'").
@@ -29,17 +29,17 @@ test(noDeps, "ensure_4_logLevels", {
     validateLogLevel("DEBUG", 3).
 }).
 
-test(noDeps, "logger_with_no_deps_defaults_to_print", {
+tst(noDeps, "logger_with_no_deps_defaults_to_print", {
     assert(console:hasSuffix("printWriter"), "'printWriter' has not been initialized").
     assert(console:printWriter:isType("UserDelegate"), "'printWriter' is not invokable").
     
     local logger is console:logger().
     logger:info("test logger_with_no_deps_defaults_to_print").
     
-    assert(logger:getWriter() = console:printWriter, "'getWriter()' did not return 'console:printWriter'").
+    assert(logger:factory:get() = console:printWriter, "'getWriter()' did not return 'console:printWriter'").
 }).
 
-test(noDeps, "logger_with_only_fs_dep_defaults_to_fs:write", 
+tst(noDeps, "logger_with_only_fs_dep_defaults_to_fs:write", 
 {
     assert(console:hasSuffix("localWriter"), "'localWriter' does not exist").
 
@@ -49,7 +49,7 @@ test(noDeps, "logger_with_only_fs_dep_defaults_to_fs:write",
 
     assert(console:localWriter <> "", "'localWriter' has not been initialized!").
     assert(console:localWriter:isType("UserDelegate"), "'localWriter' is not invokable").
-    assert(logger:getWriter() = console:localWriter, "'getWriter()' did not return 'console:localWriter'").
+    assert(logger:factory:get() = console:localWriter, "'getWriter()' did not return 'console:localWriter'").
 },
 {
     setup().
@@ -60,7 +60,7 @@ test(noDeps, "logger_with_only_fs_dep_defaults_to_fs:write",
     unset fs.
 }).
 
-test(noDeps, "logger_with_only_fs_dep_defaults_to_comms:stashmit", 
+tst(noDeps, "logger_with_only_fs_dep_defaults_to_comms:stashmit", 
 {
     assert(console:hasSuffix("localWriter"), "'localWriter' does not exist").
 
@@ -70,7 +70,7 @@ test(noDeps, "logger_with_only_fs_dep_defaults_to_comms:stashmit",
 
     assert(console:commWriter <> "", "'commWriter' has not been initialized!").
     assert(console:commWriter:isType("UserDelegate"), "'commWriter' is not invokable").
-    assert(logger:getWriter() = console:commWriter, "'getWriter()' did not return 'console:commWriter'").
+    assert(logger:factory:get() = console:commWriter, "'getWriter()' did not return 'console:commWriter'").
 },
 {
     setup().
@@ -83,9 +83,9 @@ test(noDeps, "logger_with_only_fs_dep_defaults_to_comms:stashmit",
     unset comms.
 }).
 
-test(noDeps, "logger_with_no_deps_only_writes_once", {
+tst(noDeps, "logger_with_no_deps_only_writes_once", {
     local testWriter is {
-        parameter writeDelegate, text, level, loggerLevel, toConsole.
+        parameter text, level, loggerLevel, toConsole.
         assert(not toConsole, "wrote to console in addition to console:printWriter").
     }.
     set console:printWriter to testWriter.
@@ -94,12 +94,13 @@ test(noDeps, "logger_with_no_deps_only_writes_once", {
     logger:info("test logger_with_no_deps_only_writes_once").
 }).
 
-test(noDeps, "unbound_logger_writes_messages_within_log_level_theshold_only", {
+tst(noDeps, "unbound_logger_writes_messages_within_log_level_theshold_only", {
     local invokeCount is 0.
     local delegate is {
+        parameter text.
         set invokeCount to invokeCount + 1.
     }.
-    local writer is console:unboundWriter:biind(delegate).
+    local writer is console:unboundWriter:bind(delegate).
     local logger is console:logger(console:level:info, true, console:factoryFor(writer)).
 
     local function validate {

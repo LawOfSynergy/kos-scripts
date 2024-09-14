@@ -80,7 +80,7 @@ set comms:stashmit to {
     parameter filetype is fs:type:txt:ext.
 
     if comms:checkLink() {
-        fs:write(data, fs:ship:dir + filename, filetype, archive).
+        fs:write(data, fs:ksc:ship:root + filename, filetype, archive).
     } else {
         fs:write(data, filename, filetype).
     }
@@ -99,7 +99,7 @@ set comms:transferFiles to {
         srcVol:delete(src).
     }.
 
-    fs:copyDir(fs:local:data:dir, fs:ship:data:dir, filter, onAccept, core:volume, archive).
+    fs:copyDir("/data", fs:ksc:ship:data, filter, onAccept, core:volume, archive).
     if transferedFiles logger:debug("Files were found and transfered").
     return transferedFiles.
 }.

@@ -2,15 +2,15 @@
 
 require("console").
 
-global persist is lex().
+local persistModule is lex().
 local logger is console:logger().
-set persist:logger to logger.
+set persistModule:logger to logger.
 
-set persist:handlers to list().
+set persistModule:handlers to list().
 
 
 //create and register a handler for persisting a new lexicon to disk
-set persist:handlerFor to {
+set persistModule:handlerFor to {
     parameter filename, getDelegate, setDelegate.
 
     local filepath is "/mem/" + filename + ".json".
@@ -31,17 +31,17 @@ set persist:handlerFor to {
         }
     ).
 
-    persist:handlers:add(result).
+    persistModule:handlers:add(result).
 
     return result.
 }.
 
 local ALL is "persistModuleALLmarker".
 
-set persist:write to {
+set persistModule:write to {
     parameter identifier is ALL.
 
-    for handler in persist:handlers {
+    for handler in persistModule:handlers {
         if (
             identifier = ALL 
             or identifier = handler:filename 
@@ -52,10 +52,10 @@ set persist:write to {
     }
 }.
 
-set persist:read to {
+set persistModule:read to {
     parameter identifier is ALL.
 
-    for handler in persist:handlers {
+    for handler in persistModule:handlers {
         if (
             identifier = ALL 
             or identifier = handler:filename 
@@ -66,31 +66,34 @@ set persist:read to {
     }
 }.
 
-set persist:varData to lexicon().
+set persistModule:varData to lexicon().
 
 // define a variable with this value only if it doesn't already exist
-set persist:declare to {
+set persistModule:declare to {
     parameter varName.
     parameter value.
-    if not persist:varData:haskey(varName) set persist["varData"][varName] to value.
+    if not persistModule:varData:haskey(varName) set persistModule["varData"][varName] to value.
 }.
 
 // set or create a variable value. If no value supplied, delete the variable or just do nothing
-set persist:set to {
+set persistModule:set to {
     parameter varName.
     parameter value is "killmeplzkthxbye".
-    if value = "killmeplzkthxbye" and persist:varData:haskey(varName) persist:varData:remove(varName).
-    else set persist["varData"][varName] to value.
+    if value = "killmeplzkthxbye" and persistModule:varData:haskey(varName) persistModule:varData:remove(varName).
+    else set persistModule["varData"][varName] to value.
 }.
 
 // get the value of a variable
-set persist:get to {
+set persistModule:get to {
     parameter varName.
-    if persist:varData:haskey(varName) return persist["varData"][varName].
+    if persistModule:varData:haskey(varName) return persistModule["varData"][varName].
     else return 0.
 }.
 
 // init varData namespace
 
-local varDataHandler is persist:handlerFor("varData", {return persist:varData.}, {parameter data. set persist:varData to data.}).
+local varDataHandler is persistModule:handlerFor("varData", {return persistModule:varData.}, {parameter data. set persistModule:varData to data.}).
 varDataHandler:readFromDisk().
+
+global persist is persistModule.
+register("persist", persist, {return defined persist.}).

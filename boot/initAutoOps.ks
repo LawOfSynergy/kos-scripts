@@ -13,19 +13,6 @@ CORE:PART:GETMODULE("kOSProcessor"):DOEVENT("Open Terminal").
 local link is ship:controlpart:getmodule("modulecommand").
 local signal is link:getfield("comm signal"). 
 
-
-global function require {
-    parameter module.
-
-    if module:isType("Enumerable") {
-        for m in module {
-            runOncePath("/includes/" + m).
-        }
-    } else {
-        runOncePath("/includes/" + module).
-    }
-}
-
 until false {
     set signal to link:getField("comm signal").
 
@@ -38,7 +25,7 @@ until false {
         }
 
         local baseRoot is "/autoOps/class/boot/".
-        local bootfiles is list("cmd/boot", "includes/fs").
+        local bootfiles is list("cmd/boot", "cmd/module-utils", "include/fs").
 
         //compile, copy, load, and init boot files
         switch to archive.
@@ -48,7 +35,7 @@ until false {
         }
         switch to core:volume.
 
-        runOncePath("/cmd/bootutils").
+        runOncePath("/cmd/module-utils").
         printSysInfo().
         require("fs").
         set core:bootfilename to "/cmd/boot.ksm".
@@ -64,7 +51,7 @@ until false {
 
         local count is 1.
         if(archive:files:haskey(countPath)) {
-            set count to archive:open(countPath):readAll():toNumber(1).
+            set count to archive:open(countPath):readAll():toNumber(1) + 1.
             archive:delete(countPath).
         }
         archive:create(countPath).

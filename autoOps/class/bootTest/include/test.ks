@@ -1,27 +1,27 @@
 @lazyGlobal off.
 
-global test is lex().
-set test:instances to list().
-set test:context to "".
+local testModule is lex().
+set testModule:instances to list().
+set testModule:context to "".
 
-local testRoot is "/autoOps/test/reports/".
+local testRoot is "0:/autoOps/vessel/" + boot:profile + "/" + boot:launchNum + "/test/reports/".
 local reporter is {
     parameter filename.
-    local logFile is testRoot + filename + ".txt".
+    local logPath is testRoot + filename + ".txt".
     return {
         parameter line is "".
         print line.
-        log line to logFile.
+        log line to logPath.
     }.
 }.
 
-set test:labels to lex().
+set testModule:labels to lex().
 local function labelFor {
     parameter name, color.
     local label is lex().
     set label:name to name.
     set label:color to color.
-    test:labels:append(label).
+    set testModule["labels"][name] to label.
 }
 
 labelFor("pass", green).
@@ -29,12 +29,13 @@ labelFor("fail", red).
 labelFor("skipped", yellow).
 
 local function newStatus {
-    local status is lex().
-    set status:label to test:labels:skipped.
-    set status:failures to list().
+    local stat is lex().
+    set stat:label to testModule:labels:skipped.
+    set stat:failures to list().
+    return stat.
 }
 
-set test:create to {
+set testModule:create to {
     parameter name, setup is false, teardown is false.
 
     local instance is lex().
@@ -44,53 +45,85 @@ set test:create to {
     set instance:teardown to teardown.
     set instance:status to newStatus().
     set instance:test to {
-        parameter name, run, before is false, after is false.
+        parameter tname, runner, before is false, after is false.
         local testinst is lex().
-        set testinst:name to name.
-        set testinst:parent to instance.
-        set testinst:run to run.
-        set testinst:setup to setup.
-        set testinst:teardown to teardown.
+        set testinst:name to tname.
+        set testinst:parent to instance:name.
+        set testinst:run to runner.
+        set testinst:setup to before.
+        set testinst:teardown to after.
         set testinst:status to newStatus().
-        instance:tests:append(testinst).
+        instance:tests:add(testinst).
+        print "created test " + tname.
         return testinst.
     }.
-    test:instances:append(instance).
+    testModule:instances:add(instance).
+
+    print "created test group " + name.
+
     return instance.
 }.
 
-global function start {
+set testModule:start to {
     //run tests
-    for module in test:instances {
-        set test:context to module.
-        if module:setup <> false module:setup().
-        if module:status:label = test:labels:skipped {
-            for t in module:tests {
-                set test:context to t.
-                if t:setup <> false t:setup().
-                if t:status:label = test:labels:skipped  {
-                    t:run().
-                }
-                t:teardown().
-                if t:status:label = test:labels:skipped set t:status:label to test:labels:pass.
-            }
+    for module in testModule:instances {
+        set testModule:parent to false.
+        set testModule:context to module.
+        if module:setup:istype("UserDelegate") {
+            print "Performing setup for test group " + module:name.
+            module:setup().
+        } else {
+            print "No setup required for test group " + module:name + ", setup is " + module:setup.
         }
-        set test:context to module.
-        module:teardown().
-        if module:status:label = test:labels:skipped set module:status:label to test:labels:pass.
+        if module:status:label = testModule:labels:skipped {
+            print "Executing tests in group " + module:name.
+            set testModule:parent to module.
+            for t in module:tests {
+                set testModule:context to t.
+                if t:setup:istype("UserDelegate") {
+                    print "Performing setup for test " + t:name.
+                    t:setup().
+                } else {
+                    print "No setup required for test " + t:name + ", setup is " + t:setup.
+                }
+                if t:status:label = testModule:labels:skipped  {
+                    print "Executing test " + t:name.
+                    t:run().
+                } else {
+                    print "Issue during test setup, skipping test " + t:name.
+                }
+                if t:teardown:istype("UserDelegate") {
+                    print "Performing teardown for test " + t:name.
+                    t:teardown().
+                } else {
+                    print "No teardown required for test " + t:name.
+                }
+                if t:status:label = testModule:labels:skipped set t:status:label to testModule:labels:pass.
+            }
+        } else {
+            print "Issue during test group setup, skipping tests in group " + module:name.
+        }
+        set testModule:parent to false.
+        set testModule:context to module.
+        if module:teardown:istype("UserDelegate") {
+            print "Performing teardown for test group " + module:name.
+            module:teardown().
+        } else {
+            print "No teardown required for test group " + module:name.
+        }
+        if module:status:label = testModule:labels:skipped set module:status:label to testModule:labels:pass.
     }
-    set test:context to "".
+    set testModule:context to "".
 
     //generate report
-    for module in test:instances {
+    for module in testModule:instances {
         local report is reporter(module:name).
         report(module:name + " " + module:status:label:name).
         for message in module:status:failures {
             report("    " + message).
         }
         report().
-        for t in module {
-            set status to statusFor(t).
+        for t in module:tests {
             report("    " + t:name + " " + t:status:label:name).
             for message in t:status:failures {
                 report("        " + message).
@@ -98,21 +131,22 @@ global function start {
             report().
         }
     }
-}
+}.
 
 global function assert {
     parameter condition, message.
-    if test:context = "" {
+    if testModule:context = "" {
         print "ERROR: assert only usable during tests, and test/group setup and teardown".
         return.
     }
 
     if not condition 
     {
-        set test:context:status:label to test:labels:fail.
-        test:context:status:failures:append(message).
-        if test:context:hasSuffix("parent") {
-            set test:context:parent:status:label to test:labels:fail.
-        }
+        set testModule:context:status:label to testModule:labels:fail.
+        testModule:context:status:failures:add(message).
+        if testModule:parent:istype("Lexicon") set testModule:parent:status:label to testModule:labels:fail.
     }
 }
+
+global test is testModule.
+register("test", test, {return defined test and defined assert.}).

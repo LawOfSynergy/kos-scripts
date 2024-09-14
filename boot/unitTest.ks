@@ -5,6 +5,10 @@ print "Loaded, packed".
 // ensure all systems ready
 wait until ship:unpacked.
 
+//open the terminal so I don't have to do it manually
+CORE:PART:GETMODULE("kOSProcessor"):DOEVENT("Open Terminal").
+set terminal:height to 80.
+
 //////////////////
 // Boot containers and constants
 //////////////////
@@ -16,18 +20,19 @@ local countPath is vesselPath + "/count".
 local profilePath is vesselPath + "/profile".
 
 local count is 1.
-if(archive:files:haskey(countPath)) {
-    set count to archive:open(countPath):readAll():toNumber(1).
+if archive:exists(countPath) {
+    print countPath + " already exists. reading then deleting".
+    set count to archive:open(countPath):readAll():string:toNumber(1) + 1.
     archive:delete(countPath).
 }
+print "creating " + countPath + " and writing " + count.
 archive:create(countPath).
-archive:open(countPath):write(count).
+archive:open(countPath):write("" + count).
 
 writeJson(core:volume:name, lex("class", ship:name, "number", count)).
 
 // init boot namespace
 global boot is lex().
-modules:add("boot", boot).
 
 set boot:profile to ship:name.
 set boot:launchNum to count.
@@ -49,23 +54,6 @@ function printSysInfo {
 //////////////////
 // Boot Utility Functions
 //////////////////
-
-global function initModules {
-    fs:visit(core:volume, "/includes", fs:isCompiled@, {parameter f. runOncePath(f).}).
-}.
-
-global function require {
-    parameter module.
-
-    if module:isType("Enumerable") {
-        for m in module {
-            runOncePath("/includes/" + m).
-        }
-    } else {
-        runOncePath("/includes/" + module).
-    }
-}
-
 local function toPathString {
     parameter p.
 
@@ -95,9 +83,14 @@ local function walk {
     }
 }
 
+local function info {
+    parameter data.
+    print toPathString(path(data)).
+}
+
 local function printTree {
     parameter vol, start.
-    walk(vol, start, print@).
+    walk(vol, start, info@).
 }.
 
 local function compiler {
@@ -105,6 +98,10 @@ local function compiler {
 
     local compileFile is {
         parameter descriptor.
+        if(not descriptor:isType("VolumeItem")) {
+            print "expected VolumeItem, received: " + descriptor.
+            return.
+        }
         if descriptor:extension = "ks" {
             switch to archive.
             compile toPathString(path(descriptor)).
@@ -120,7 +117,11 @@ local function compiler {
 // POST
 //////////////////
 
-local baseRoot is "0:/autoOps/class".
+local baseRoot is "/autoOps/class".
+
+core:volume:createdir("/cmd").
+core:volume:createdir("/include").
+core:volume:createdir("/test").
 
 compiler(baseRoot + "/boot/cmd", "1:/cmd").
 compiler(baseRoot + "/boot/include", "1:/include").
@@ -129,13 +130,13 @@ compiler(baseRoot + "/bootTest/cmd", "1:/cmd").
 compiler(baseRoot + "/bootTest/include", "1:/include").
 compiler(baseRoot + "/bootTest/test", "1:/test").
 
-local function initModule {
-    parameter descriptor.
-    runPath("1:" + toPathString(path(descriptor))).
-}
+printTree(core:volume, "/").
 
-runPath("1:/include/test.ksm").
-walk(core:volume, "/test", initModule@).
+runOncePath("/cmd/module-utils").
+runPath("/include/test").
+walk(core:volume, "/test", {parameter f. if f:isFile runOncePath(f).}).
+
+print "Beginning POST".
 
 //Power On Self Test (POST)
 local post is true.
@@ -145,6 +146,7 @@ for module in test:instances {
 }
 
 if post {
+    print "POST Succesful, cleaning up resources".
     //clear all test state
     unset test.
     unset console.
@@ -153,10 +155,10 @@ if post {
     unset persist.
     unset ops.
     core:volume:delete("/test").
+
+    print "Beginning remaining unit testing".
+    validateModules().
     
-    //reset the test framework
-    runPath("1:/include/test.ksm").
-    walk(core:volume, "/include", initModule@).
 
     local logger is console:logger().
     set boot:logger to logger.
@@ -168,6 +170,6 @@ if post {
     }
 
     //execute all tests in vessel profile
-    walk(core:volume, "/test", initModule@).
+    walk(core:volume, "/test", {parameter f. if f:isFile runOncePath(f).}).
     test:start().
 }

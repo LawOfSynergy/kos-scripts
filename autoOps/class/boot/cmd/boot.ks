@@ -16,7 +16,6 @@ set core:volume:name to "core".
 
 // init boot namespace
 global boot is lex().
-modules:add("boot", boot).
 
 local profile is readJson("/boot/profile").
 set boot:profile to profile["class"].
@@ -35,35 +34,16 @@ function printSysInfo {
     logger:info("Vessel: " + boot:profile + " " + boot:launchNum).
 }
 
-//////////////////
-// Boot Utility Functions
-//////////////////
-
-global function initModules {
-    fs:visit(core:volume, "/includes", fs:isCompiled@, {parameter f. runOncePath(f).}).
-}.
-
-global function require {
-    parameter module.
-
-    if module:isType("Enumerable") {
-        for m in module {
-            runOncePath("/includes/" + m).
-        }
-    } else {
-        runOncePath("/includes/" + module).
-    }
-}
-
 /////////////////////////
 // Begin system boot ops
 /////////////////////////
 
 //load cached modules
+runOncePath("/cmd/module-utils").
 require(list("console", "fs")).
 local logger is console:logger().
 set boot:logger to logger.
-initModules().
+fs:visit(core:volume, "/include", fs:isCompiled, runOncePath@).
 
 clearscreen.
 printSysInfo().
@@ -84,7 +64,7 @@ if signal <> "0.00" {
     if archive:exists(fs:ship:reloadFlag) {
         logger:info("request to reload ship profile received").
         archive:delete(fs:ship:reloadFlag).
-        core:volume:delete("/includes").
+        core:volume:delete("/include").
         fs:loadClass("boot").
         if(archive:exists(fs:ksc:profile:local:class)){
             for class in archive:open(fs:ksc:profile:local:class):readAll():split(",") {
@@ -107,7 +87,7 @@ persist:read().
 
 // initial persistent variable definitions
 persist:declare("startupUT", list()).
-persist:get("startupUT"):append(time:seconds).
+persist:get("startupUT"):add(time:seconds).
 persist:declare("lastDay", -1).
 persist:declare("commRanges", lexicon()).
 

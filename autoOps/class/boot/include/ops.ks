@@ -2,27 +2,27 @@
 
 require(list("console", "fs", "comms", "persist", "hibernate")).
 
-global ops is lex().
+local opsModule is lex().
 local logger is console:logger().
-set ops:logger to logger.
+set opsModule:logger to logger.
 
-set ops:RELATIVE_TIME to true.
-set ops:ABSOLUTE_TIME to false.
-set ops:PERSIST_Y to true.
-set ops:PERSIST_N to false.
+set opsModule:RELATIVE_TIME to true.
+set opsModule:ABSOLUTE_TIME to false.
+set opsModule:PERSIST_Y to true.
+set opsModule:PERSIST_N to false.
 
-set ops:MILLIS to 1.
-set ops:SECOND to 1000.
-set ops:MINUTE to ops:SECOND * 60.
-set ops:HOUR to ops:MINUTE*60.
-set ops:DAY to ops:HOUR*24.
+set opsModule:MILLIS to 1.
+set opsModule:SECOND to 1000.
+set opsModule:MINUTE to opsModule:SECOND * 60.
+set opsModule:HOUR to opsModule:MINUTE*60.
+set opsModule:DAY to opsModule:HOUR*24.
 
-set ops:opsFilePath to fs:ksc:ship:ops.
+set opsModule:opsFilePath to fs:ksc:ship:ops.
 
 //init persistent state
-set ops:operations to lexicon().
+set opsModule:operations to lexicon().
 local sleepTimers to lexicon().
-local operationsHandler is persist:handlerFor("opsData", {return ops:operations.}, {parameter data. set ops:operations to data.}).
+local operationsHandler is persist:handlerFor("opsData", {return opsModule:operations.}, {parameter data. set opsModule:operations to data.}).
 local timerHandler is persist:handlerFor("timerData", {return sleepTimers.}, {parameter data. set sleepTimers to data.}).
 operationsHandler:readFromDisk().
 timerHandler:readFromDisk().
@@ -32,7 +32,7 @@ local opCodes is list().
 
 //creates and registers an operation that can be executed through a .ops file
 //delegate should return true if this script needs to abort
-set ops:opCodeFor to {
+set opsModule:opCodeFor to {
     parameter command, delegate.
 
     local result is lex(
@@ -44,13 +44,13 @@ set ops:opCodeFor to {
     return result.
 }.
 
-set ops:start to {
+set opsModule:start to {
     local printOpsFileMsg is true.
 
     until false {
         //things to do if there is a connection
         if comms:checkLink() {
-            local opsfile is ops:opsFilePath.
+            local opsfile is opsModule:opsFilePath.
 
             logger:debug("Beginning ops loop").
             //check if a new ops file is waiting to be executed
@@ -95,8 +95,8 @@ set ops:start to {
         fs:visit(core:volume, "/ops", fs:isCompiled@, {parameter f. runPath(f).}).
 
         // run any existing ops
-        if ops:operations:length {
-            for op in ops:operations:values op().
+        if opsModule:operations:length {
+            for op in opsModule:operations:values op().
         }
 
         wait 0.001.
@@ -127,7 +127,7 @@ local function executeTimers {
                 } else {
 
                     // this is a function called once, so add it to the ops queue and delete the timer        
-                    set ops["operations"][timer:name] to timer:callback.
+                    set opsModule["operations"][timer:name] to timer:callback.
                     timerKill:add(timer["name"]).
                 }
             }
@@ -138,7 +138,7 @@ local function executeTimers {
 
 
 // create wait timers without pausing code operation
-set ops:sleep to {
+set opsModule:sleep to {
   parameter name.
   parameter callback.
   parameter napTime.
@@ -160,13 +160,13 @@ set ops:sleep to {
 // file opcodes
 
 // load a command file or folder of files from KSC to the onboard disk
-ops:opCodeFor("load", {
+opsModule:opCodeFor("load", {
     parameter cmd.
     copyPath("0:" + boot:shipDir + cmd[1], "/cmd/" + cmd[2]).
 }).
 
 // run a stored file. files stored in /ops are automatically run on boot
-ops:opCodeFor("run", {
+opsModule:opCodeFor("run", {
     parameter cmd.
 
     // confirm that this is an actual file. If it is not, ignore all further run commands
@@ -183,7 +183,7 @@ ops:opCodeFor("run", {
 
 // run a file that we only want to execute once from the archive and not store to run again
 // NOTE: calling the same file after making changes on the archive during the same run period will not pick up changes!
-ops:opCodeFor("exe", {
+opsModule:opCodeFor("exe", {
     parameter cmd.
     
     if archive:exists(cmd[1]) {
@@ -197,7 +197,7 @@ ops:opCodeFor("exe", {
 }).
 
 // delete a file or directory
-ops:opCodeFor("del", {
+opsModule:opCodeFor("del", {
     parameter cmd.
     
     if core:volume:exists("/" + cmd[1]) {
@@ -212,7 +212,7 @@ ops:opCodeFor("del", {
 }).
 
 // print to console (not log) all files in a directory
-ops:opCodeFor("list", {
+opsModule:opCodeFor("list", {
     parameter cmd.
     
     local vol is choose core:volume if cmd:length < 3 else volume(cmd[2]).
@@ -223,34 +223,37 @@ ops:opCodeFor("list", {
 // session opcodes
 
 // reboot the cpu
-ops:opCodeFor("reboot", {
+opsModule:opCodeFor("reboot", {
     parameter cmd.
     
     persist:write().
-    archive:delete(ops:opsFilePath).
+    archive:delete(opsModule:opsFilePath).
     reboot.
 }).
 
 // end this session with the probe
-ops:opCodeFor("disconnect", {
+opsModule:opCodeFor("disconnect", {
     parameter cmd.
     
     persist:write().
     print "Connection closed. Please return to Tracking Station or Space Center".
-    archive:delete(ops:opsFilePath).
+    archive:delete(opsModule:opsFilePath).
     when kuniverse:canquicksave then kuniverse:quicksaveto(ship:name + " - Disconnect @ " + time:calendar + " [" + time:clock + "]").
     wait 0.1.
     kuniverse:pause().
 }).
 
-ops:opCodeFor("set", {
+opsModule:opCodeFor("set", {
     parameter cmd.
 
     persist:set(cmd[1], cmd[2]).
 }).
 
-ops:opCodeFor("declare", {
+opsModule:opCodeFor("declare", {
     parameter cmd.
 
     persist:declare(cmd[1], cmd[2]).
 }).
+
+global ops is opsModule.
+register("ops", ops, {return defined ops.}).
