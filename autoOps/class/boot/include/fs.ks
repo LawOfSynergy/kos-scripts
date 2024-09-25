@@ -1,3 +1,5 @@
+@lazyGlobal off.
+
 parameter kscRoot is "/autoOps", localRoot is "", initReqDirs is list("/boot", "/data", "/mem", "/ops", "/cmd", "/include", "/test").
 
 require("console").
@@ -96,22 +98,22 @@ set fsModule:loadClass to {
         return.
     }
 
-    local root is fsModule:class:for(class).
+    local root is fsModule:ksc:classFor(class).
 
     //compile and copy includes
     logger:info("Compiling and copying class includes").
-    fsModule:compile(archive, root:include).
+    fsModule:compile(archive, core:volume, root:include).
     fsModule:copyDir(root:include, localRoot + "/include", fsModule:isCompiled@).
 
     //compile and copy commands
     logger:info("Compiling and copying class cmds").
-    fsModule:compile(archive, root:cmd).
+    fsModule:compile(archive, core:volume, root:cmd).
     fsModule:copyDir(root:cmd, localRoot + "/cmd", fsModule:isCompiled@).
 
     if tst {
         //compile and copy tests
         logger:info("Compiling and copying class tests").
-        fsModule:compile(archive, root:tst).
+        fsModule:compile(archive, core:volume, root:tst).
         fsModule:copyDir(root:tst, localRoot + "/test", fsModule:isCompiled@).
     }
 }.
@@ -155,7 +157,8 @@ fsModule:addFileType(
         parameter filename.
         parameter vol.
 
-        local doLog is fileName <> "/data/log.txt".
+        //prevent recursive writes to the default log file.
+        local doLog is not (filename:endsWith("/data/log") or filename:endsWith("/data/log.txt")).
 
         if doLog {
             logger:debug("writing contents to " + vol:name + ":" + filename).
@@ -290,7 +293,7 @@ set fsModule:write to {
     parameter vol is core:volume.
 
     //prevent recursive writes to the default log file.
-    local doLog is (filename <> "/data/log").
+    local doLog is not (filename:endsWith("/data/log") or filename:endsWith("/data/log.txt")).
 
     if not filename:endswith("." + filetype) set filename to filename + "." + filetype.
 
@@ -326,6 +329,9 @@ set fsModule:write to {
 set fsModule:toPathString to {
     parameter p.
 
+    set p to toPath(p).
+    if not p:isType("Path") return false.
+
     local result is "".
     for segment in p:segments {
         set result to result + "/" + segment.
@@ -333,18 +339,30 @@ set fsModule:toPathString to {
     return result.
 }.
 
-// visits all file aand folder descriptors (recursively) in the start directory, and feeds them to the callback
+local function toPath {
+    parameter pathLike.
+
+    if pathLike:isType("Path") return pathLike.
+    if pathLike:isType("VolumeItem") return path(pathLike).
+    if pathLike:isType("String") return path(pathLike).
+
+    logger:error("Expected pathlike (String | Path | VolumeItem), received: " + pathLike).
+    return false.
+}
+set fsModule:toPath to toPath@.
+
+// visits all file and folder descriptors (recursively) in the start directory, and feeds them to the callback
 local function walk {
     parameter vol.
     parameter start.
     parameter callback.
 
-    if start:isType("VolumeItem") set start to path(start).
-    if start:isType("Path") set start to fsModule:toPathString(start).
+    set start to toPath(start).
+    if not start:isType("Path") return.
 
     logger:debug("Beginning walk of " + vol + ", " + start + ", " + callback).
 
-    local dir is vol:open(start).
+    local dir is vol:open(fsModule:toPathString(start)).
     logger:debug("invoking callback for " + dir).
     callback(dir).
 
@@ -386,8 +404,11 @@ set fsModule:visit to {
 set fsModule:pathAfter to {
     parameter child, parent.
 
-    local childPath is path(child).
-    local parentPath is path(parent).
+    local childPath is toPath(child).
+    local parentPath is toPath(parent).
+
+    if not childPath:isType("Path") or not parentPath:isType("Path") return "".
+
     local result is "".
 
     for segment in childPath:segments:sublist(parentPath:segments:length, childPath:segments:length - parentPath:segments:length) {
@@ -399,6 +420,9 @@ set fsModule:pathAfter to {
 
 set fsModule:copyOnly to {
     parameter f, src, tgt, srcVol, tgtVol. 
+
+    logger:debug("performing copy-only from " + srcVol:name + ":" + src + ", to " + tgtVol:name + ":" + tgt).
+
     copyPath(srcVol:name + ":" + src, tgtVol:name + ":" + tgt).
 }.
 
@@ -421,26 +445,35 @@ set fsModule:appendOrCopy to {
 
 set fsModule:copyDir to {
     parameter src, tgt.
-    parameter accept is {return true.}.
+    parameter accept is {parameter f. return true.}.
     parameter onAccept is fsModule:copyOnly@.
     parameter srcVol is archive.
     parameter tgtVol is core:volume.
 
-    local srcDir is path(src).
-
     local copier is {
         parameter f.
 
-        local srcPath is src + fsModule:pathAfter(path(f), srcDir).
-        local tgtPath is tgt + fsModule:pathAfter(path(f), srcDir).
+        logger:debug("Performing copy operation on " + fs:toPathString(path(f))).
+        logger:debug("src: " + src + ", tgt: " + tgt + ", srcVol: " + srcVol:name + ", tgtVol: " + tgtVol:name).
+
+        local fPath is fs:pathAfter(f, srcVol:open(src)).
+        logger:debug("fPath: " + fPath).
 
         if f:isFile {
+            logger:debug("evaluating file against filter").
             if accept(f) {
-                onAccept(f, srcPath, tgtPath, srcVol, tgtVol).
+                logger:debug("accepted by filter").
+                onAccept(f, src + fPath, tgt + fPath, srcVol, tgtVol).
+            } else {
+                logger:debug("rejected by filter").
             }
         } else {
-            if not tgtVol:exists(tgtPath) {
-                tgtVol:createDir(tgtPath).
+            logger:debug("checking existence of dir").
+            if not tgtVol:exists(tgt + fPath) {
+                logger:debug("dir does not exist, creating new dir").
+                tgtVol:createDir(tgt + fPath).
+            } else {
+                logger:debug("dir already exists, skipping creation").
             }
         }
     }.
@@ -450,11 +483,13 @@ set fsModule:copyDir to {
 
 
 set fsModule:compile to {
-    parameter vol, start.
+    parameter vol, retVol, start.
 
     local compiler is {
         parameter f.
+        switch to vol.
         compile fs:toPathString(path(f)).
+        switch to retVol.
     }.
 
     fsModule:visit(vol, start, fsModule:isSrc@, compiler@).

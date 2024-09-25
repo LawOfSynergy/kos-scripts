@@ -1,3 +1,5 @@
+@lazyGlobal off.
+
 //////////////////
 // Initialize Console (logging)
 //////////////////

@@ -133,7 +133,7 @@ set testModule:start to {
     }
 }.
 
-global function assert {
+global assert is {
     parameter condition, message.
     if testModule:context = "" {
         print "ERROR: assert only usable during tests, and test/group setup and teardown".
@@ -146,7 +146,7 @@ global function assert {
         testModule:context:status:failures:add(message).
         if testModule:parent:istype("Lexicon") set testModule:parent:status:label to testModule:labels:fail.
     }
-}
+}.
 
 global test is testModule.
-register("test", test, {return defined test and defined assert.}).
+register("test", test, {return defined test and defined assert.}, {unset test. unset assert.}).

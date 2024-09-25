@@ -9,6 +9,9 @@ wait until ship:unpacked.
 CORE:PART:GETMODULE("kOSProcessor"):DOEVENT("Open Terminal").
 set terminal:height to 80.
 
+//give this volume a name
+set core:volume:name to "core".
+
 //////////////////
 // Boot containers and constants
 //////////////////
@@ -76,9 +79,10 @@ local function walk {
     callback(dir).
 
     for descriptor in dir:lex:values {
-        callback(descriptor).
         if not descriptor:isFile {
             walk(vol, toPathString(path(descriptor)), callback).
+        } else {
+            callback(descriptor).
         }
     }
 }
@@ -158,16 +162,18 @@ if post {
 
     print "Beginning remaining unit testing".
     validateModules().
-    
 
     local logger is console:logger().
     set boot:logger to logger.
 
-    if(archive:files:HASKEY(profilePath)){
-        for class in archive:open(profilePath):readAll():split(",") {
+    if(archive:exists(profilePath)){
+        for class in archive:open(profilePath):readAll():string:split(",") {
+            print "Loading class: " + class.
             fs:loadClass(class, true).
         }
     }
+
+    printTree(core:volume, "/").
 
     //execute all tests in vessel profile
     walk(core:volume, "/test", {parameter f. if f:isFile runOncePath(f).}).

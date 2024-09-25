@@ -13,7 +13,7 @@ if ship:partstagged("hibernationCtrl"):length {
 }
 
 // place the command probe into a state of minimum power
-function hibernate {
+global hibernate is {
   parameter wakefile.
   parameter duration is 0.
   parameter comms is false.
@@ -46,4 +46,6 @@ function hibernate {
     ship:partstagged(core:tag)[0]:getmodule("ModuleGenerator"):doevent("Hibernate CPU").
     ship:partstagged(core:tag)[0]:getmodule("KOSProcessor"):doevent("Toggle Power").
   } else boot:logger:warn("Hibernation is not supported on this vessel!").
-}
+}.
+
+register("hibernate", lex(), {return defined canHibernate and defined hibernate.}, {unset canHibernate. unset hibernate.}).

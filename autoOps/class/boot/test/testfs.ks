@@ -83,6 +83,12 @@ tst(noDeps, "pathAfter_returns_sensible_subpath", {
     
     assert(fs:pathAfter(core:volume:open("/testdata/1/data.txt"), parent) = "/1/data.txt", "did not return correct subpath for file").
     assert(fs:pathAfter(core:volume:open("/testdata/1/"), parent) = "/1", "did not return correct subpath for directory").
+    assert(fs:pathAfter("/testdata/1/data.txt", "/testdata") = "/1/data.txt", "did not return correct subpath for string file").
+    assert(fs:pathAfter("/testdata/1/", "/testdata") = "/1", "did not return correct subpath for string directory").
+    assert(fs:pathAfter("/testdata/1", "/testdata") = "/1", "did not return correct subpath for string directory without trailing slash").
+    assert(fs:pathAfter(path("/testdata/1/data.txt"), path("/testdata")) = "/1/data.txt", "did not return correct subpath for path file").
+    assert(fs:pathAfter(path("/testdata/1"), path("/testdata")) = "/1", "did not return correct subpath for path directory").
+    assert(fs:pathAfter("/tesstdata/1", parent) = "/1", "did not return correct subpath for mixed pathlike parameters").
 }).
 
 //fs:toCSVLine
@@ -132,7 +138,7 @@ tst(noDeps, "visit_only_hits_files_and_only_if_they_match_the_filter", {
 
 //fs:compile
 tst(noDeps, "compile_recurses_into_directories_and_creates_ksm_files_from_ks_files", {
-    fs:compile(core:volume, "/testdata").
+    fs:compile(core:volume, core:volume, "/testdata").
     assert(core:volume:exists("/testdata/1/exec.ksm"), "did not compile exec.ks to exec.ksm").
 }, 
 {

@@ -5,10 +5,12 @@ print "Loaded, packed".
 // ensure all systems ready
 wait until ship:unpacked.
 
-local bootfile is "/autoOps/class/boot/firstboot".
-
+//open the terminal so I don't have to do it manually
 print "loaded, unpacked".
 CORE:PART:GETMODULE("kOSProcessor"):DOEVENT("Open Terminal").
+
+//give this volume a name
+set core:volume:name to "core".
 
 local link is ship:controlpart:getmodule("modulecommand").
 local signal is link:getfield("comm signal"). 
@@ -19,11 +21,7 @@ until false {
     print "looking for adequate signal. currently: " + signal.
     
     if signal <> "0.00" {
-        //newly compile boot.ks
-        if not archive:exists(bootfile + ".ks") {
-            print "Error finding " + bootfile + ".ks in archive!".
-        }
-
+        //newly compile boot files
         local baseRoot is "/autoOps/class/boot/".
         local bootfiles is list("cmd/boot", "cmd/module-utils", "include/fs").
 
@@ -36,7 +34,6 @@ until false {
         switch to core:volume.
 
         runOncePath("/cmd/module-utils").
-        printSysInfo().
         require("fs").
         set core:bootfilename to "/cmd/boot.ksm".
 
