@@ -3,7 +3,7 @@
 local setup is {runPath("/include/console").}.
 local teardown is {unset console.}.
 
-local noDeps is test:create(
+local defaultGroup is test:create(
     "test_console_no_dependencies"
 ).
 
@@ -12,39 +12,45 @@ local function tst {
     return module:test(name, exec, set, tear).
 }
 
-tst(noDeps, "ensure_4_logLevels", {
+tst(defaultGroup, "ensure_format_takes_correct_num_params", {
+    local result is console:fmt("%this %% string %s values like %s", "takes", 23).
+    assert(result = "%this % string takes values like 23", "String formatting did not occur correctly. Expected '%this % string takes values like 23', recieved '" + result + "'").
+}).
+
+tst(defaultGroup, "ensure_4_logLevels", {
     assert(defined console, "'console' does not exist").
     assert(console:hasSuffix("level"), "'console' missing member 'level'").
     local function validateLogLevel {
         parameter name, level.
-        assert(console:level:hasSuffix(name), "'level' missing member '" + name + "'").
-        assert(console:level[name]:hasSuffix("name"), "'error' missing member 'name'").
-        assert(console:level[name]:name = name, "'" + name + "' has mismatched 'name': " + console:level[name]:name).
-        assert(console:level[name]:hasSuffix("value"), "'" + name + "' missing member 'value'").
-        assert(console:level[name]:value = level, "'" + name + "' has mismatched 'value': " + console:level[name]:value + ", expected: " + level).
+        assert(console:level:hasSuffix(name), console:fmt("'level' missing member '%s'", name)).
+        assert(console:level[name]:hasSuffix("name"), console:fmt("'%s' missing member 'name'", name)).
+        assert(console:level[name]:name = name, console:fmt("'%s' has mismatched 'name': %s", name, console:level[name]:name)).
+        assert(console:level[name]:hasSuffix("value"), console:fmt("'%s' missing member 'value'", name)).
+        assert(console:level[name]:value = level, console:fmt("'%s' has mismatched 'value': %s, expected: %s", name, console:level[name]:value, level)).
     }
-    validateLogLevel("error", 0).
+    validateLogLevel("NONE", -1).
+    validateLogLevel("ERROR", 0).
     validateLogLevel("WARN", 1).
     validateLogLevel("INFO", 2).
     validateLogLevel("DEBUG", 3).
 }).
 
-tst(noDeps, "logger_with_no_deps_defaults_to_print", {
+tst(defaultGroup, "logger_with_no_deps_defaults_to_print", {
     assert(console:hasSuffix("printWriter"), "'printWriter' has not been initialized").
     assert(console:printWriter:isType("UserDelegate"), "'printWriter' is not invokable").
     
-    local logger is console:logger().
+    local logger is console:logger("test").
     logger:info("test logger_with_no_deps_defaults_to_print").
     
     assert(logger:factory:get() = console:printWriter, "'getWriter()' did not return 'console:printWriter'").
 }).
 
-tst(noDeps, "logger_with_only_fs_dep_defaults_to_fs:write", 
+tst(defaultGroup, "logger_with_only_fs_dep_defaults_to_fs:write", 
 {
     assert(console:hasSuffix("localWriter"), "'localWriter' does not exist").
 
     //moved before the check validating localWriter's existence since it is lazily initialized
-    local logger is console:logger(). 
+    local logger is console:logger("test"). 
     logger:info("test logger_with_only_fs_dep_defaults_to_fs:write").
 
     assert(console:localWriter <> "", "'localWriter' has not been initialized!").
@@ -60,12 +66,12 @@ tst(noDeps, "logger_with_only_fs_dep_defaults_to_fs:write",
     unset fs.
 }).
 
-tst(noDeps, "logger_with_only_fs_dep_defaults_to_comms:stashmit", 
+tst(defaultGroup, "logger_with_comms_dep_defaults_to_comms:stashmit", 
 {
     assert(console:hasSuffix("localWriter"), "'localWriter' does not exist").
 
     //moved before the check validating localWriter's existence since it is lazily initialized
-    local logger is console:logger(). 
+    local logger is console:logger("test"). 
     logger:info("test logger_with_only_fs_dep_defaults_to_comms:stashmit").
 
     assert(console:commWriter <> "", "'commWriter' has not been initialized!").
@@ -83,36 +89,32 @@ tst(noDeps, "logger_with_only_fs_dep_defaults_to_comms:stashmit",
     unset comms.
 }).
 
-tst(noDeps, "logger_with_no_deps_only_writes_once", {
+tst(defaultGroup, "logger_with_no_deps_only_writes_once", {
     local testWriter is {
         parameter text, level, loggerLevel, toConsole.
         assert(not toConsole, "wrote to console in addition to console:printWriter").
     }.
     set console:printWriter to testWriter.
 
-    local logger is console:logger(console:level:info, true, console:factoryFor(testWriter)).
+    local logger is console:logger("test", console:level:info, true, console:factoryFor(testWriter)).
     logger:info("test logger_with_no_deps_only_writes_once").
 }).
 
-tst(noDeps, "unbound_logger_writes_messages_within_log_level_theshold_only", {
-    local invokeCount is 0.
-    local delegate is {
-        parameter text.
-        set invokeCount to invokeCount + 1.
-    }.
-    local writer is console:unboundWriter:bind(delegate).
-    local logger is console:logger(console:level:info, true, console:factoryFor(writer)).
+tst(defaultGroup, "unbound_logger_writes_messages_within_log_level_theshold_only", {
+    local act is mock(1).
+    local writer is console:unboundWriter:bind(act:invoke@).
+    local logger is console:logger("test", console:level:info, true, console:factoryFor(writer)).
 
     local function validate {
         parameter level, count.
 
-        set invokeCount to 0.
+        act:reset().
         set logger:level to level.
         logger:error("test error").
         logger:warn("test warn").
         logger:info("test info").
         logger:debug("test debug").
-        assert(invokeCount = count, "expected " + count + " writes, received: " + invokeCount).
+        assert(act:invocations:length = count, console:fmt("expected %s writes, received: %s", count, act:invocations:length)).
     }
 
     validate(console:level:none, 0).

@@ -1,9 +1,9 @@
 @lazyGlobal off.
 
 local setup is {}.
-local teardown is {unset console.}.
+local teardown is {}.
 
-local noDeps is test:create(
+local defaultGroup is test:create(
     "test_comms"
 ).
 

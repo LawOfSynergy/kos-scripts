@@ -19,38 +19,33 @@ if defined boot {
     if boot:hasSuffix("launchNum") set launchNum to boot:launchNum.
 }
 
-local logger to console:logger().
+local logger to console:logger("fs").
 set fsModule:logger to logger.
 
 //archive paths are available via the following constants
 //local paths are meant to be handled by the concerned script or or a cmd/include file
-set fsModule:ksc to lex().
-set fsModule:ksc:root to kscRoot.
-set fsModule:ksc:class to lex().
-set fsModule:ksc:class:root to fsModule:ksc:root + "/class".
+set fsModule:ksc to lex("root", kscRoot).
+set fsModule:ksc:class to lex("root", fsModule:ksc:root + "/class").
 set fsModule:ksc:classFor to {
     parameter name.
-    local class is lex().
-    set class:root to fsModule:ksc:class:root + "/" + name.
+    local class is lex("root", fsModule:ksc:class:root + "/" + name).
     set class:include to class:root + "/include".
     set class:cmd to class:root + "/cmd".
     set class:tst to class:root + "/test".
     return class.
 }.
-set fsModule:ksc:profile to lex().
-set fsModule:ksc:profile:root to fsModule:ksc:root + "/vessel".
+set fsModule:ksc:profile to lex("root", fsModule:ksc:root + "/vessel").
 set fsModule:ksc:profileFor to {
     parameter name.
-    local profile is lex().
-    set profile:root to fsModule:ksc:profile:root + "/" + name.
+    local profile is lex("root", fsModule:ksc:profile:root + "/" + name).
     set profile:count to profile:root + "/count".
     set profile:class to profile:root + "/profile".
     set profile:launch to {
         parameter num.
-        local launch is lex().
-        set launch:root to profile:root + "/" + num.
+        local launch is lex("root", profile:root + "/" + num).
         set launch:reloadFlag to launch:root + "/reload".
-        set launch:ops to launch:root + "/ops".
+        set launch:ops to lex("root", launch:root + "/ops").
+        set launch:ops:file to launch:ops:root + "/ops.ops".
         set launch:boot to launch:root + "/boot.ksm".
         set profile:data to launch:root + "/data".
         return launch.
@@ -520,8 +515,8 @@ set fsModule:dataTypes to list(fsModule:type:txt:ext, fsModule:type:raw:ext, fsM
 set fsModule:isData to fsModule:in@:bind(fsModule:dataTypes).
 
 set fsModule:printTree to {
-    parameter vol, start.
-    walk(vol, start, logger:info@).
+    parameter vol, start, printer is logger:info.
+    walk(vol, start, printer).
 }.
 
 global fs is fsModule.

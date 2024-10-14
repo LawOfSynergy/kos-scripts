@@ -3,36 +3,102 @@
 require("console").
 
 local persistModule is lex().
-local logger is console:logger().
+local logger is console:logger("persist").
 set persistModule:logger to logger.
 
-set persistModule:handlers to list().
+set persistModule:handler to lex().
 
+local function sanitize {
+    parameter ref, visited.
+
+    if ref:isType("UserDelegate") return "null".
+    if ref:isType("Lexicon") {
+        if(visited:contains(ref)) return "cyclic ref:" + visited:indexof(ref).
+        visited:add(ref).
+
+        for key in ref:keys {
+            set ref[key] to sanitize(ref[key], visited).
+        }
+        return ref.
+    }
+    if ref:isType("Enumerable") {
+        if(visited:contains(ref)) return "cyclic ref:" + visited:indexof(ref).
+        visited:add(ref).
+
+        local newList is list().
+        local it is ref:iterator.
+        until not it:next() {
+            newList:add(sanitize(it:value, visited)).
+        }
+    }
+    return ref.
+}
+set persistModule:sanitize to sanitize@.
+
+//create and register a basic lex-backed handler with default get/set logic
+set persistModule:basicDataHandler to {
+    parameter name, 
+        readOnCreate is false, 
+        data is lex(), 
+        getDelegate is {
+            return result:data.
+        },
+        setDelegate is {
+            parameter newData.
+            set result:data to newData.
+        },
+        filepath is "/mem/" + name + ".json".
+
+    local result is persistModule:handlerFor(
+        name, 
+        getDelegate, 
+        setDelegate,
+        filepath
+    ).
+    set result:data to data.
+    set result:declare to {
+        parameter varName.
+        parameter value.
+        if not result:data:haskey(varName) set result["data"][varName] to value.
+    }.
+    set result:set to {
+        parameter varName.
+        parameter value is "killmeplzkthxbye".
+        if value = "killmeplzkthxbye" and result:data:haskey(varName) result:data:remove(varName).
+        else set result["data"][varName] to value.
+    }.
+    set result:get to {
+        parameter varName.
+        if result:data:haskey(varName) return result["data"][varName].
+        else return 0.
+    }.
+    if readOnCreate result:readFromDisk().
+    return result.
+}.
 
 //create and register a handler for persisting a new lexicon to disk
 set persistModule:handlerFor to {
-    parameter filename, getDelegate, setDelegate.
-
-    local filepath is "/mem/" + filename + ".json".
+    parameter name, getDelegate, setDelegate, filepath is "/mem/" + name + ".json".
 
     local result is lex(
-        "filename", filename,
+        "name", name,
         "filepath", filepath,
         "readFromDisk", {
-            if core:volume:exists(filepath) {                
+            if core:volume:exists(filepath) {        
+                logger:debug(console:fmt("Loading contents of '%s':%n%s", filepath, readJson(filepath))).        
                 setDelegate(readJson(filepath)).
+            } else {
+                logger:warn(console:fmt("Could not find '%s', data not set", filepath)).
             }
         },
         "writeToDisk", {
-            //sanitize the lexicon to remove any delegates
-            local contents is getDelegate().
-            for var in contents:values if var:typename = "UserDelegate" set var to "null".
+            local contents is sanitize(getDelegate(), list()).
+            logger:debug(console:fmt("Writing contents to '%s':%n%s", filepath, contents)).
             writejson(contents, filepath).
         }
     ).
 
-    persistModule:handlers:add(result).
-
+    set persistModule["handler"][name] to result.
     return result.
 }.
 
@@ -41,59 +107,54 @@ local ALL is "persistModuleALLmarker".
 set persistModule:write to {
     parameter identifier is ALL.
 
-    for handler in persistModule:handlers {
-        if (
-            identifier = ALL 
-            or identifier = handler:filename 
-            or identifier = handler:filepath
-            or identifier:contains(handler:filename)
-            or identifier:contains(handler:filepath)
-        ) handler:writeToDisk().
+    if identifier:isType("Enumerable") {
+        local it is identifier:iterator.
+
+        until not it:next() {
+            if it:value:isType("String") persistModule:handler[it:value]:writeToDisk().
+            else logger:error("Expected string in enumerable, received " + it:value).
+        }
+    } else if identifier:isType("String") {
+        if identifier = ALL {
+            for handler in persistModule:handler:values {
+                handler:writeToDisk().
+            }
+        } else {
+            persistModule:handler[identifier]:writeToDisk().
+        }
+    } else {
+        logger:error("Expected string or enumerable<string>, received " + identifier).
     }
 }.
 
 set persistModule:read to {
     parameter identifier is ALL.
 
-    for handler in persistModule:handlers {
-        if (
-            identifier = ALL 
-            or identifier = handler:filename 
-            or identifier = handler:filepath
-            or identifier:contains(handler:filename)
-            or identifier:contains(handler:filepath)
-        ) handler:readFromDisk().
+    if identifier:isType("Enumerable") {
+        local it is identifier:iterator.
+
+        until not it:next() {
+            if it:value:isType("String") persistModule:handler[it:value]:readFromDisk().
+            else logger:error("Expected string in enumerable, received " + it:value).
+        }
+    } else if identifier:isType("String") {
+        if identifier = ALL {
+            for handler in persistModule:handler:values {
+                handler:readFromDisk().
+            }
+        } else {
+            persistModule:handler[identifier]:readFromDisk().
+        }
+    } else {
+        logger:error("Expected string or enumerable<string>, received " + identifier).
     }
 }.
 
-set persistModule:varData to lexicon().
-
-// define a variable with this value only if it doesn't already exist
-set persistModule:declare to {
-    parameter varName.
-    parameter value.
-    if not persistModule:varData:haskey(varName) set persistModule["varData"][varName] to value.
-}.
-
-// set or create a variable value. If no value supplied, delete the variable or just do nothing
-set persistModule:set to {
-    parameter varName.
-    parameter value is "killmeplzkthxbye".
-    if value = "killmeplzkthxbye" and persistModule:varData:haskey(varName) persistModule:varData:remove(varName).
-    else set persistModule["varData"][varName] to value.
-}.
-
-// get the value of a variable
-set persistModule:get to {
-    parameter varName.
-    if persistModule:varData:haskey(varName) return persistModule["varData"][varName].
-    else return 0.
-}.
-
-// init varData namespace
-
-local varDataHandler is persistModule:handlerFor("varData", {return persistModule:varData.}, {parameter data. set persistModule:varData to data.}).
-varDataHandler:readFromDisk().
+// init common namespace
+set persistModule:common to persistModule:basicDataHandler("common", true).
+set persistModule:declare to persistModule:common:declare.
+set persistModule:set to persistModule:common:set.
+set persistModule:get to persistModule:common:get.
 
 global persist is persistModule.
 register("persist", persist, {return defined persist.}).

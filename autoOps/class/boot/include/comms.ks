@@ -8,7 +8,7 @@ require(list("console", "fs")).
 
 local commsModule is lex().
 
-local logger is console:logger().
+local logger is console:logger("comms").
 set commsModule:logger to logger.
 
 set commsModule:connected to false.

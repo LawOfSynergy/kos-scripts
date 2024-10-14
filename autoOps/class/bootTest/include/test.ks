@@ -133,6 +133,101 @@ set testModule:start to {
     }
 }.
 
+global mock is {
+    parameter argCount.
+
+    //the full mock context, for configuration and validation
+    local result is lex().
+    set result:invocations to list().
+    //clear the invocations list
+    set result:reset to {
+        set result:invocations to list().
+        set result:returnVals to queue().
+    }.
+    //the mock function
+    set result:invoke to {
+        //capture values of this invocation
+        local args is list().
+        from {local i is 0.} until i = argCount step {set i to i + 1.} do {
+            parameter arg.
+            args:add(arg).
+        }
+        result:invocations:add(args).
+
+        //return value from this invocation
+        if result:returnVals:empty return. //no return values
+        local rv is result:returnVals:peek().
+        if not rv:persist result:returnVals:pop(). //pop non-terminal return values
+        return rv:value.
+    }.
+    set result:returnVals to queue().
+    //fluent terminator for final successive return value
+    set result:finallyReturn to {
+        parameter value.
+        result:returnVals:push(lex("value", value, "persist", true)).
+    }.
+    //fluent style for sequenced returns
+    set result:thenReturn to {
+        parameter value.
+        result:returnVals:push(lex("value", value, "persist", false)).
+        return result.
+    }.
+
+    return result.
+}.
+
+global spy is {
+    //the full mock context, for configuration and validation
+    local result is lex().
+    set result:invocations to list().
+    //clear the invocations list
+    set result:reset to {
+        set result:invocations to list().
+        set result:delegates to queue().
+    }.
+    set result:delegates to queue().
+    //fluent style configurator to set up invocation sequence.
+    set result:then to {
+        parameter argCount, func. //argcount is here to support varargs invocations
+        local ctx is lex("argCount", argCount, "invoke", func).
+        set ctx:persist to false.
+        result:delegates:push(ctx).
+        return result.
+    }.
+    //fluent style terminator to set p invocation sequence
+    set result:finally to {
+        parameter argCount, func. //argcount is here to support varargs invocations
+        local ctx is lex("argCount", argCount, "invoke", func).
+        set ctx:persist to true.
+        result:delegates:push(ctx).
+        return result.
+    }.
+
+    //the spy function
+    set result:invoke to {
+        local delCtx is result:delegates:peek().
+        if not delCtx:persist result:delegates:pop().
+
+        local del is delCtx:invoke.
+        local ctx is lex().
+        set ctx:args to list().
+
+        //capture and bind parameters
+        from {local i is 0.} until i = delCtx:argCount step {set i to i + 1.} do {
+            parameter arg.
+            ctx:args:add(arg).
+            set del to del:bind(arg).
+        }
+
+        //invoke and store return value
+        set ctx:rv to del().
+        result:invocations:add(ctx).
+        return ctx:rv.
+    }.
+
+    return result.
+}.
+
 global assert is {
     parameter condition, message.
     if testModule:context = "" {
@@ -142,6 +237,7 @@ global assert is {
 
     if not condition 
     {
+        if message:isType("UserDelegate") set message to message().
         set testModule:context:status:label to testModule:labels:fail.
         testModule:context:status:failures:add(message).
         if testModule:parent:istype("Lexicon") set testModule:parent:status:label to testModule:labels:fail.
@@ -149,4 +245,4 @@ global assert is {
 }.
 
 global test is testModule.
-register("test", test, {return defined test and defined assert.}, {unset test. unset assert.}).
+register("test", test, {return defined test and defined assert and defined mock.}, {unset test. unset assert. unset mock.}).

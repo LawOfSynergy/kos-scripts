@@ -78,6 +78,8 @@ local function walk {
     local dir is vol:open(start).
     callback(dir).
 
+    if dir:isType("Boolean") return.
+
     for descriptor in dir:lex:values {
         if not descriptor:isFile {
             walk(vol, toPathString(path(descriptor)), callback).
@@ -163,7 +165,7 @@ if post {
     print "Beginning remaining unit testing".
     validateModules().
 
-    local logger is console:logger().
+    local logger is console:logger("boot").
     set boot:logger to logger.
 
     if(archive:exists(profilePath)){

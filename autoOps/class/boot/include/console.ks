@@ -9,6 +9,13 @@
 
 local consoleModule is lex().
 
+set consoleModule:LF to char(10). //line feed, unix-style line endings
+set consoleModule:CR to char(13). //carriage return
+set consoleModule:CRLF to "" + consoleModule:CR + consoleModule:LF. //cr + nl for windows style line endings
+set consoleModule:NL to consoleModule:LF. //default to unix stle line endings.
+
+set consoleModule:loggers to lex().
+
 set consoleModule:level to lex().
 
 local function addLogLevel {
@@ -109,9 +116,11 @@ consoleModule:defaultFactory:prepend({return defined comms.}, {
 }).
 
 set consoleModule:logger to {
-    parameter level is consoleModule:level:info, toConsole is true, writerFactory is consoleModule:defaultFactory.
-
+    parameter name, level is consoleModule:level:info, toConsole is true, writerFactory is consoleModule:defaultFactory.
+    
     local logger is lex().
+
+    set logger:name to name.
     set logger:level to level.
     set logger:factory to writerFactory.
     set logger:toConsole to toConsole.
@@ -122,7 +131,40 @@ set consoleModule:logger to {
         }
     }
 
+    set consoleModule["loggers"][name] to logger.
+
     return logger.
+}.
+
+set consoleModule:fmt to {
+    parameter s.
+
+    local result is "".
+    local i is 0.
+    until i >= s:length {
+        if s[i] = "%" {
+            local next is s[i+1].
+            if next = "%" { // %% -> %
+                set result to result + "%".
+                set i to i + 2.
+            } else if next = "s" { //%s -> parameter[index]:toString()
+                parameter val.
+                set result to result + val.
+                set i to i + 2.
+            } else if next = "n" { //$n -> new line
+                set result to result + consoleModule:NL.
+                set i to i + 2.
+            } else { // default to just %
+                print "Warning, encounted '%' that is not part of a valid escape sequence, treating as literal. string: " + s.
+                set result to result + "%".
+                set i to i + 1.
+            }
+        } else {
+            set result to result + s[i].
+            set i to i + 1.
+        }
+    }
+    return result.
 }.
 
 global console is consoleModule.

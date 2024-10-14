@@ -35,15 +35,66 @@ function printSysInfo {
 }
 
 /////////////////////////
-// Begin system boot ops
+// Begin system boot load
 /////////////////////////
 
 //load cached modules
 runOncePath("/cmd/module-utils").
 require(list("console", "fs")).
-local logger is console:logger().
+local logger is console:logger("boot").
 set boot:logger to logger.
 fs:visit(core:volume, "/include", fs:isCompiled, runOncePath@).
+
+// set up hibernation utilities
+set boot:canHibernate to false.
+if ship:partstagged("hibernationCtrl"):length {
+  set boot:hibernateCtrl to ship:partstagged("hibernationCtrl")[0]:getmodule("Timer").
+  set boot:canHibernate to true.
+  if ship:partstagged(core:tag)[0]:getmodule("ModuleGenerator"):hasevent("Activate CPU") {
+    ship:partstagged(core:tag)[0]:getmodule("ModuleGenerator"):doevent("Activate CPU").
+  }
+}
+
+set boot:noWakeFile to "".
+
+set boot:hibernate to {
+  parameter wakefile is boot:noWakeFile.
+  parameter duration is 0.
+  parameter comms is false.
+
+  // only proceed if hibernation is available
+  if boot:canHibernate {
+
+    // set comms as requested
+    if not comms comms:setCommStatus("retract antenna").
+
+    // define the file that will run once after coming out of hibernation
+    if wakefile:length persist:set("wakeFile", wakeFile).
+
+    // save all the current volatile data
+    persist:write().
+
+    // set and activate the timer?
+    if duration > 0 and duration <= 120 {
+      if boot:hibernateCtrl:hasevent("Use Seconds") boot:hibernateCtrl:doevent("Use Seconds").
+      boot:hibernateCtrl:setfield("Seconds", duration).
+      boot:hibernateCtrl:doevent("Start Countdown").
+    } else if duration > 0 {
+      if boot:hibernateCtrl:hasevent("Use Minutes") boot:hibernateCtrl:doevent("Use Minutes").
+      boot:hibernateCtrl:setfield("Minutes", floor(duration/60)).
+      boot:hibernateCtrl:doevent("Start Countdown").
+    }
+    
+    // switch off the cpu. Nite nite!
+    logger:info("Activating hibernation").
+    ship:partstagged(core:tag)[0]:getmodule("ModuleGenerator"):doevent("Hibernate CPU").
+    ship:partstagged(core:tag)[0]:getmodule("KOSProcessor"):doevent("Toggle Power").
+  } else logger:warn("Hibernation is not supported on this vessel!").
+}.
+
+/////////////////////////
+// Begin system boot ops
+/////////////////////////
 
 clearscreen.
 printSysInfo().
@@ -117,17 +168,6 @@ persist:set("lastDay", time:day).
 
 // add system opcodes
 ops:opCodeFor("sysinfo", printSysInfo@).
-ops:opCodeFor("tree", { //more like forest, since it can take multiple dirs
-    parameter args.
-
-    if args:length > 2 {
-        for path in args:sublist(1, args:length - 1) {
-            fs:printTree(core:volume, path).
-        }
-    } else {
-        fs:printTree(core:volume, "/").
-    }
-}).
 
 logger:info("System boot complete").
 
