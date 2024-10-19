@@ -15,7 +15,7 @@ set module:CRLF to "" + module:CR + module:LF. //cr + lf for windows style line 
 set module:NL to module:CRLF. //default to windows style line endings.
 
 set module:fmtStr to "[%t][%s] %s".
-set module:defaultLogFile to lex("path", "/data/log", "log").
+set module:defaultLogFile to lex("path", "/data/log", "ext", "log").
 
 set module:loggers to lex().
 
@@ -30,7 +30,7 @@ local function addLogLevel {
     set level:logAt to {
         parameter logger, text, toConsole is logger:toConsole.
         local writer is logger:factory:get().
-        write(logger, level:value, text, toConsole, writer). 
+        write(logger, level, text, toConsole, writer). 
     }.
     set level:fmtLogAt to {
         parameter logger, text.
@@ -51,7 +51,7 @@ local function addLogLevel {
         }
         parameter toConsole is logger:toConsole.
 
-        write(logger, level:value, result, toConsole, writer). 
+        write(logger, level, result, toConsole, writer). 
     }.
 
     module:level:add(name, level).
@@ -224,15 +224,16 @@ module:defaultFactory:prepend({return defined fs.}, {return module:fsWriter.}).
 module:defaultFactory:prepend({return defined comms.}, {return module:commWriter.}).
 
 set module:logger to {
-    parameter name, level is module:level:info, toConsole is true, logFile is module:defaultLogFile, writerFactory is module:defaultFactory.
+    parameter name, level is module:level:info, toConsole is true, lf is module:defaultLogFile, writerFactory is module:defaultFactory.
     
     local logger is lex().
 
     set logger:name to name.
     set logger:level to level.
     set logger:toConsole to toConsole.
-    set logger:logFile to logFile.
+    set logger:logFile to lf.
     set logger:factory to writerFactory.
+    set logger:fmtStr to module:fmtStr.
 
     for logLevel in module:level:values {
         if(logLevel <> module:level:none) {

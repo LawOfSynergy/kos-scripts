@@ -89,7 +89,7 @@ set module:newDataSheet to {
         fs:write(console:fmt("%s%n", value), console:fmt("%s-statics.txt", ds:baseFilePath), fs:type:txt:ext).
         sdata:add(value).
     }.
-    set ds:static:add to staticAdd@.
+    set ds:static:log to staticAdd@.
 
     set ds:timeseries to lex().
     set ds:timeseries:getters to tsgetters.
@@ -97,17 +97,17 @@ set module:newDataSheet to {
         parameter header, getter.
         set tsgetters[header] to getter.
     }
-    set ds:timeseries:add to tsAdd@.
+    set ds:timeseries:register to tsAdd@.
 
     set ds:delta to lex().
     set ds:delta:getters to dgetters.
     set ds:delta:defaults to ddefaults.
     local function deltaAdd {
-        parameter header, getter, default.
+        parameter header, getter, default is "null".
         set dgetters[header] to getter.
         set ddefaults[header] to default.
     }
-    set ds:delta:add to deltaAdd@.
+    set ds:delta:register to deltaAdd@.
 
     local snap is {
         parameter previous is false.
@@ -118,7 +118,6 @@ set module:newDataSheet to {
         //snapshot timeseries datapoints
         for key in ds:timeseries:getters:keys {
             result:add(key, ds:timeseries:getters[key]()).
-            logger:infof("%s=%s", key, result[key]).
         }
 
         //snapshot deltas
@@ -152,7 +151,6 @@ set module:newDataSheet to {
         local current is snap(previous).
         local currentHeaders is current:keys.
         set ds:previous to current.
-        logger:info(ds:previous).
 
         if migrate {
             set migrate to false.

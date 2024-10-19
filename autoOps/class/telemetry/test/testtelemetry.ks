@@ -52,19 +52,17 @@ tst(defaultGroup, "ensure_blank_datasheet_is_well_formed", {
 
 tst(defaultGroup, "ensure_snapshots_create_timeseries_and_deltas_correctly", {
     timeMock:thenReturn(1):thenReturn(2).
-    ds:timeseries:add("time", timeMock:invoke@).
-    ds:delta:add("dTime", {
+    ds:timeseries:register("time", timeMock:invoke@).
+    ds:delta:register("dTime", {
         parameter prev, current.
         return current:time - prev:time.
     }).
-
-    logger:infof("ds: %s", ds).
     
     ds:snapshot().
     assert(ds:previous:time = 1, "expected 'time' = 0, received: " + ds:previous:time).
     assert(ds:previous:dTime = "null", "expected 'dTime' = 'null', received: " + ds:previous:dTime).
     ds:snapshot().
-    assert(ds:previous:time = 1, "expected 'time' = 1, received: " + ds:previous:time).
+    assert(ds:previous:time = 2, "expected 'time' = 2, received: " + ds:previous:time).
     assert(ds:previous:dTime = 1, "expected 'dTime' = 1, received: " + ds:previous:dTime).
 }).
 

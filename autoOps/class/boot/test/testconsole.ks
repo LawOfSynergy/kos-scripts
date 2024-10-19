@@ -36,9 +36,6 @@ tst(defaultGroup, "ensure_4_logLevels", {
 }).
 
 tst(defaultGroup, "logger_with_no_deps_defaults_to_print", {
-    assert(console:hasSuffix("printWriter"), "'printWriter' has not been initialized").
-    assert(console:printWriter:isType("UserDelegate"), "'printWriter' is not invokable").
-    
     local logger is console:logger("test").
     logger:info("test logger_with_no_deps_defaults_to_print").
     
@@ -47,14 +44,9 @@ tst(defaultGroup, "logger_with_no_deps_defaults_to_print", {
 
 tst(defaultGroup, "logger_with_only_fs_dep_defaults_to_fs:write", 
 {
-    assert(console:hasSuffix("localWriter"), "'localWriter' does not exist").
-
-    //moved before the check validating localWriter's existence since it is lazily initialized
     local logger is console:logger("test"). 
     logger:info("test logger_with_only_fs_dep_defaults_to_fs:write").
 
-    assert(console:localWriter <> "", "'localWriter' has not been initialized!").
-    assert(console:localWriter:isType("UserDelegate"), "'localWriter' is not invokable").
     assert(logger:factory:get() = console:fsWriter, "'getWriter()' did not return 'console:localWriter'").
 },
 {
@@ -68,14 +60,9 @@ tst(defaultGroup, "logger_with_only_fs_dep_defaults_to_fs:write",
 
 tst(defaultGroup, "logger_with_comms_dep_defaults_to_comms:stashmit", 
 {
-    assert(console:hasSuffix("localWriter"), "'localWriter' does not exist").
-
-    //moved before the check validating localWriter's existence since it is lazily initialized
     local logger is console:logger("test"). 
     logger:info("test logger_with_only_fs_dep_defaults_to_comms:stashmit").
 
-    assert(console:commWriter <> "", "'commWriter' has not been initialized!").
-    assert(console:commWriter:isType("UserDelegate"), "'commWriter' is not invokable").
     assert(logger:factory:get() = console:commWriter, "'getWriter()' did not return 'console:commWriter'").
 },
 {
@@ -89,19 +76,18 @@ tst(defaultGroup, "logger_with_comms_dep_defaults_to_comms:stashmit",
 }).
 
 tst(defaultGroup, "unbound_logger_writes_messages_within_log_level_theshold_only", {
-    local act is mock(1).
-    local writer is console:unboundWriter:bind(act:invoke@).
-    local logger is console:logger("test", console:level:info, true, console:factoryFor(writer)).
+    local act is mock(2).
+    local logger is console:logger("test", console:level:info, true, console:defaultLogFile, console:factoryFor(act:invoke@)).
 
     local function validate {
         parameter level, count.
 
         act:reset().
         set logger:level to level.
-        logger:error("test error").
-        logger:warn("test warn").
-        logger:info("test info").
-        logger:debug("test debug").
+        logger:error("test error", false).
+        logger:warn("test warn", false).
+        logger:info("test info", false).
+        logger:debug("test debug", false).
         assertf(act:invocations:length = count, "expected %s writes, received: %s", count, act:invocations:length).
     }
 

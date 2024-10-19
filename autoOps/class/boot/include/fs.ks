@@ -20,7 +20,6 @@ if defined boot {
 }
 
 local logger to console:logger("fs").
-set logger:level to console:level:debug.
 set module:logger to logger.
 
 //archive paths are available via the following constants
@@ -190,13 +189,13 @@ module:addFileType(
         parameter data.
 
         if data:isType("String") return data.
-        return console:fmt("%s%n", data).
+        return console:fmt("%s", data).
     },
     {
         parameter text, filename, vol.
 
         if vol:freespace = -1 or vol:freespace > text:length {
-            vol:open(filename):write(text).
+            vol:open(filename):writeln(text).
         }
     },
     {

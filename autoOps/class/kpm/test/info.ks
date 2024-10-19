@@ -1,6 +1,6 @@
 @lazyGlobal off.
 
-local logger is console:logger().
+local logger is console:logger("kpm-info").
 
 logger:info("addons: " + addons).
 for key in addons:suffixnames {
