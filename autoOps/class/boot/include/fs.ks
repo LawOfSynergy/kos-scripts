@@ -9,7 +9,7 @@ require("console").
 // Boot-critical Filesystem Initialization
 //////////////////
 
-local fsModule is lex().
+local module is lex().
 
 local localProfile is ship:name.
 local launchNum is 0.
@@ -20,24 +20,25 @@ if defined boot {
 }
 
 local logger to console:logger("fs").
-set fsModule:logger to logger.
+set logger:level to console:level:debug.
+set module:logger to logger.
 
 //archive paths are available via the following constants
 //local paths are meant to be handled by the concerned script or or a cmd/include file
-set fsModule:ksc to lex("root", kscRoot).
-set fsModule:ksc:class to lex("root", fsModule:ksc:root + "/class").
-set fsModule:ksc:classFor to {
+set module:ksc to lex("root", kscRoot).
+set module:ksc:class to lex("root", module:ksc:root + "/class").
+set module:ksc:classFor to {
     parameter name.
-    local class is lex("root", fsModule:ksc:class:root + "/" + name).
+    local class is lex("root", module:ksc:class:root + "/" + name).
     set class:include to class:root + "/include".
     set class:cmd to class:root + "/cmd".
     set class:tst to class:root + "/test".
     return class.
 }.
-set fsModule:ksc:profile to lex("root", fsModule:ksc:root + "/vessel").
-set fsModule:ksc:profileFor to {
+set module:ksc:profile to lex("root", module:ksc:root + "/vessel").
+set module:ksc:profileFor to {
     parameter name.
-    local profile is lex("root", fsModule:ksc:profile:root + "/" + name).
+    local profile is lex("root", module:ksc:profile:root + "/" + name).
     set profile:count to profile:root + "/count".
     set profile:class to profile:root + "/profile".
     set profile:launch to {
@@ -53,29 +54,29 @@ set fsModule:ksc:profileFor to {
     return profile.
 }.
 
-set fsModule:ksc:profile:local to fsModule:ksc:profileFor(localProfile).
-set fsModule:ksc:ship to fsModule:ksc:profile:local:launch(launchNum).
+set module:ksc:profile:local to module:ksc:profileFor(localProfile).
+set module:ksc:ship to module:ksc:profile:local:launch(launchNum).
 
-set fsModule:reqDirs to list().
+set module:reqDirs to list().
 
 for dir in initReqDirs {
-    fsModule:reqDirs:add(localRoot + dir).
+    module:reqDirs:add(localRoot + dir).
 }
 
-set fsModule:reqDirCheck to {
-    for dir in fsModule:reqDirs {
+set module:reqDirCheck to {
+    for dir in module:reqDirs {
         if not core:volume:exists(dir) core:volume:createDir(dir).
     }
 }.
 
-fsModule:reqDirCheck(). 
+module:reqDirCheck(). 
 
-set fsModule:loadClass to {
+set module:loadClass to {
     parameter class, tst is false.
 
-    logger:info("Loading specified class: " + class).
+    logger:infof("Loading specified class: %s", class).
 
-    fsModule:reqDirCheck().
+    module:reqDirCheck().
 
     if(not class) {
         logger:warn("Class not specified").
@@ -93,23 +94,23 @@ set fsModule:loadClass to {
         return.
     }
 
-    local root is fsModule:ksc:classFor(class).
+    local root is module:ksc:classFor(class).
 
     //compile and copy includes
     logger:info("Compiling and copying class includes").
-    fsModule:compile(archive, core:volume, root:include).
-    fsModule:copyDir(root:include, localRoot + "/include", fsModule:isCompiled@).
+    module:compile(archive, core:volume, root:include).
+    module:copyDir(root:include, localRoot + "/include", module:isCompiled@).
 
     //compile and copy commands
     logger:info("Compiling and copying class cmds").
-    fsModule:compile(archive, core:volume, root:cmd).
-    fsModule:copyDir(root:cmd, localRoot + "/cmd", fsModule:isCompiled@).
+    module:compile(archive, core:volume, root:cmd).
+    module:copyDir(root:cmd, localRoot + "/cmd", module:isCompiled@).
 
     if tst {
         //compile and copy tests
         logger:info("Compiling and copying class tests").
-        fsModule:compile(archive, core:volume, root:tst).
-        fsModule:copyDir(root:tst, localRoot + "/test", fsModule:isCompiled@).
+        module:compile(archive, core:volume, root:tst).
+        module:copyDir(root:tst, localRoot + "/test", module:isCompiled@).
     }
 }.
 
@@ -117,76 +118,95 @@ set fsModule:loadClass to {
 // Filesystem Initialization
 //////////////////
 
-set fsModule:type to lex().
+set module:type to lex().
 
-set fsModule:addFileType to {
-    parameter ext, writeHandler, appendHandler is false.
+set module:addFileType to {
+    parameter ext, formatter, writeHandler is defaultWriter@, appendHandler is defaultAppendHandler@.
 
-    logger:debug("Adding file handler for " + ext + " writeHandler: " + writeHandler + " appendHandler: " + appendHandler).
+    logger:debugf("Adding file handler for '.%s'%nformatter: %s%nwriteHandler: %s%nappendHandler: %s", ext, formatter, writeHandler, appendHandler).
     local type is lex().
     set type:ext to ext.
+    set type:formatter to formatter.
     set type:writeHandler to writeHandler.
     set type:appendHandler to appendHandler.
 
-    fsModule:type:add(ext, type).
+    module:type:add(ext, type).
 }.
+
+local function defaultWriter {
+    parameter text, filename, vol.
+
+    logger:debug("executing default write handler").
+    logger:debugf("Writing to '%s:%s' the contents: %s", vol, filename, text).
+    
+    if vol:freespace = -1 or vol:freespace > text:length {
+        vol:open(filename):write(text).
+    } else {
+        logger:error("Out Of Memory!").
+    }
+}
 
 local function defaultAppendHandler {
     parameter f, filename, vol.
+    
+    logger:debug("executing default append handler").
+    logger:debugf("copying from '%s' to '%s:%s'", fs:toPath(f), vol, filename).
 
+    local contents is f:readall().
 
-    if fileName <> "/data/log.txt" {
-        logger:debug("executing default append handler").
-        logger:debug("appending to " + vol:name + ":" + filename).
-        logger:debug("write target: " + vol:open(filename)).
-        logger:debug("copying contents of " + f).
-        logger:debug(f:readall()).
+    if vol:freespace = -1 or vol:freespace > contents:length {
+        vol:open(filename):write(contents).
+    } else {
+        logger:error("Out Of Memory!").
     }
-    vol:open(filename):write(f:readall()).
 }
 
-fsModule:addFileType(
-    "txt", 
-    {
-        parameter data.
-        parameter filename.
-        parameter vol.
-
-        //prevent recursive writes to the default log file.
-        local doLog is not (filename:endsWith("/data/log") or filename:endsWith("/data/log.txt")).
-
-        if doLog {
-            logger:debug("writing contents to " + vol:name + ":" + filename).
-            logger:debug("data size: " + data:length + " free space: " + vol:freespace).
-            logger:debug("raw data: " + data).
-            logger:debug("write target: " + vol:open(filename)).
-        }
-        if vol:freespace = -1 or vol:freespace > data:length {
-            vol:open(filename):writeln(data).
-        } else {
-            if doLog logger:error("Out Of Memory!").
-        }
-    },
-    defaultAppendHandler@
-).
-
-fsModule:addFileType(
+module:addFileType(
     "raw",
     {
         parameter data.
-        parameter filename.
-        parameter vol.
 
-        logger:debug("writing contents to " + vol:name + ":" + filename).
-        logger:debug("data size: " + data:length + " free space: " + vol:freespace).
-        logger:debug("raw data: " + data).
-        logger:debug("write target: " + vol:open(filename)).
+        if data:isType("String") return data.
+        return console:fmt("%s", data).
+    },
+    defaultWriter@,
+    false //not appendable (safer for unknown file types)
+).
 
-        if vol:freespace = -1 or vol:freespace > data:length {
-            vol:open(filename):write(data).
+module:addFileType(
+    "txt", 
+    {
+        parameter data.
+
+        if data:isType("String") return data.
+        return console:fmt("%s", data).
+    }
+).
+
+//disable logging while operating on log files to prevent infinite recursion
+module:addFileType(
+    "log",
+    {
+        parameter data.
+
+        if data:isType("String") return data.
+        return console:fmt("%s%n", data).
+    },
+    {
+        parameter text, filename, vol.
+
+        if vol:freespace = -1 or vol:freespace > text:length {
+            vol:open(filename):write(text).
         }
     },
-    false //not appendable (safer for unknown file types)
+    {
+        parameter f, filename, vol.
+
+        local contents is f:readall().
+        if vol:freespace = -1 or vol:freespace > contents:length {
+            vol:open(filename):write(contents).
+        }
+    }
 ).
 
 local function toCSVLine{
@@ -207,29 +227,22 @@ local function toCSVLine{
     logger:error("Invalid object! Expected: String | Lexicon | Enumerable").
     return false.
 }
-set fsModule:toCSVLine to toCSVLine@.
+set module:toCSVLine to toCSVLine@.
 
-fsModule:addFileType(
+module:addFileType(
     "csv",
     {
         parameter data.
-        parameter filename.
-        parameter vol.
-
-        logger:debug("writing contents to " + vol:name + ":" + filename).
-        logger:debug("data size: " + data:length + " free space: " + vol:freespace).
-        logger:debug("raw data: " + data).
-        logger:debug("formatted data: " + toCSVLine(data)).
-        logger:debug("write target: " + vol:open(filename)).
-        logger:debug("invoking txt:writeHandler").
-
-        fsModule:type:txt:writeHandler(toCSVLine(data), filename, vol).
-    },
-    defaultAppendHandler@
+        return console:fmt("%s%n", toCSVLine(data)).
+    }
 ).
 
-fsModule:addFileType(
+module:addFileType(
     "json",
+    {
+        parameter data.
+        return data.
+    },
     {
         parameter data.
         parameter filename.
@@ -264,11 +277,10 @@ fsModule:addFileType(
             set dataSize to dataSize / persist:get("jsonSizes")[filename]:length.
         }
 
-        logger:debug("writing contents to " + vol:name + ":" + filename).
-        logger:debug("data size: " + dataSize + " free space: " + vol:freespace).
-        logger:debug("raw data: " + data).
-        logger:debug("write target: " + vol:open(filename)).
-        logger:debug("json specific debug logging not implemented yet").
+        logger:debugf("writing contents to %s: %s", vol:name, filename).
+        logger:debugf("data size: %s, free space: %s", dataSize, vol:freespace).
+        logger:debugf("raw data: %s", data).
+        logger:debugf("write target: %s", vol:open(filename)).
 
         // compare the size of the old file to the size of the new one and store it
         local filesize is vol:open(filename):size.
@@ -278,50 +290,53 @@ fsModule:addFileType(
     false //not appendable
 ).
 
-fsModule:addFileType("ks", false, false). //not writable, not appendable
-fsModule:addFileType("ksm", false, false). //not writable, not appendable
+module:addFileType("ks", false, false, false). //not writable, not appendable
+module:addFileType("ksm", false, false, false). //not writable, not appendable
 
-set fsModule:write to {
+set module:write to {
     parameter data.
     parameter filename is "/data/log".
-    parameter filetype is fsModule:type:txt:ext.
+    parameter filetype is module:type:log:ext.
     parameter vol is core:volume.
-
-    //prevent recursive writes to the default log file.
-    local doLog is not (filename:endsWith("/data/log") or filename:endsWith("/data/log.txt")).
 
     if not filename:endswith("." + filetype) set filename to filename + "." + filetype.
 
-    if doLog logger:debug("Writing data to " + vol:name + ":" + filename).
+    //prevent recursive writes to any log files.
+    local doLog is not filetype = "log".
+
+    if doLog logger:debugf("Writing data to %s:%s", vol:name, filename).
 
     if not vol:exists(filename) {
         if doLog logger:debug("File does not exist; creating empty file.").
         vol:create(filename).
     }
 
-    if doLog logger:debug("Loading file handler for " + filetype).
+    if doLog logger:debugf("Loading file handler for '%s'", filetype).
 
-    local writer is "".
+    local formatter is false.
+    local writer is false.
     //get handler for extension and invoke write handler
-    if not fsModule:type:hasKey(filetype) {
-        if doLog logger:error("Unknown filetype: " + filetype + ", defaulting to raw").
-        set writer to fsModule:type:raw:writeHandler.
+    if not module:type:hasKey(filetype) {
+        if doLog logger:warnf("Unknown filetype: '%s', defaulting to raw", filetype).
+        set formatter to module:type:raw:formatter.
+        set writer to module:type:raw:writeHandler.
     } else {
-        set writer to fsModule["type"][filetype]["writeHandler"].
+        set formatter to module["type"][filetype]["formatter"].
+        set writer to module["type"][filetype]["writeHandler"].
+
+        if doLog logger:debugf("Handler exists for '%s'", filetype).
     }
 
-    if doLog logger:debug("Handler exists for " + filetype). 
-    if doLog logger:debug("Write handler for filetype is " + writer).
+    if doLog logger:debugf("formatter: %s%nwriter: %s", formatter, writer).
 
-    if writer:isType("UserDelegate") {
-        if doLog logger:debug("Write handler is valid delegate. Executing delegate").
-        writer(data, filename, vol).
+    if formatter:isType("UserDelegate") and writer:isType("UserDelegate") {
+        if doLog logger:debug("Formatter and write handler are valid delegates.").
+        writer(formatter(data), filename, vol).
     }
-    else 
-        if doLog logger:warn("Writing is not supported for filetype: " + filetype).
+    else if doLog logger:warn("Writing is not supported for filetype: " + filetype).
 }.
 
-set fsModule:toPathString to {
+set module:toPathString to {
     parameter p.
 
     set p to toPath(p).
@@ -344,7 +359,7 @@ local function toPath {
     logger:error("Expected pathlike (String | Path | VolumeItem), received: " + pathLike).
     return false.
 }
-set fsModule:toPath to toPath@.
+set module:toPath to toPath@.
 
 // visits all file and folder descriptors (recursively) in the start directory, and feeds them to the callback
 local function walk {
@@ -355,28 +370,28 @@ local function walk {
     set start to toPath(start).
     if not start:isType("Path") return.
 
-    logger:debug("Beginning walk of " + vol + ", " + start + ", " + callback).
+    logger:debugf("Beginning walk of %s:%s with callback: %s", vol, start, callback).
 
-    local dir is vol:open(fsModule:toPathString(start)).
+    local dir is vol:open(module:toPathString(start)).
     logger:debug("invoking callback for " + dir).
     callback(dir).
 
     for descriptor in dir:lex:values {
         if not descriptor:isFile {
             logger:debug("recursing into directory " + descriptor).
-            walk(vol, fsModule:toPathString(path(descriptor)), callback).
+            walk(vol, module:toPathString(path(descriptor)), callback).
         } else {
             logger:debug("invoking callback for " + descriptor).
             callback(descriptor).
         }
     }
 
-    logger:debug("Ending walk of " + vol + ", " + start + ", " + callback).
+    logger:debugf("Ending walk of %s:%s with callback: %s", vol, start, callback).
 }
 
-set fsModule:walk to walk@.
+set module:walk to walk@.
 
-set fsModule:visitor to {
+set module:visitor to {
     parameter filter, callback, f.
 
     if f:isFile {
@@ -385,18 +400,18 @@ set fsModule:visitor to {
 }.
 
 // visits all files (recursively) in the start directory. If it is accepted by the filter, then it is fed to the callback
-set fsModule:visit to {
+set module:visit to {
     parameter vol.
     parameter start.
     parameter filter.
     parameter callback.
 
-    logger:debug("beginning visit to " + vol + ", " + start + ", " + filter + ", " + callback).
+    logger:debugf("beginning visit to %s, %s, %s, %s", vol, start, filter, callback).
 
-    walk(vol, start, fsModule:visitor@:bind(filter, callback)).
+    walk(vol, start, module:visitor@:bind(filter, callback)).
 }.
 
-set fsModule:pathAfter to {
+set module:pathAfter to {
     parameter child, parent.
 
     local childPath is toPath(child).
@@ -413,20 +428,20 @@ set fsModule:pathAfter to {
     return result.
 }.
 
-set fsModule:copyOnly to {
+set module:copyOnly to {
     parameter f, src, tgt, srcVol, tgtVol. 
 
-    logger:debug("performing copy-only from " + srcVol:name + ":" + src + ", to " + tgtVol:name + ":" + tgt).
+    logger:debugf("performing copy-only from %s:%s to %s:%s", srcVol:name, src, tgtVol:name, tgt).
 
     copyPath(srcVol:name + ":" + src, tgtVol:name + ":" + tgt).
 }.
 
-set fsModule:appendOrCopy to {
+set module:appendOrCopy to {
     parameter f, src, tgt, srcVol, tgtVol.
 
     local ext is path(src):extension.
-    if fsModule:type:hasKey(ext) {
-        local append is fsModule["type"][ext]["appendHandler"].
+    if module:type:hasKey(ext) {
+        local append is module["type"][ext]["appendHandler"].
 
         //if file type is appendable, then append
         if append:isType("UserDelegate") {
@@ -438,10 +453,10 @@ set fsModule:appendOrCopy to {
     copyPath(srcVol:name + ":" + src, tgtVol:name + ":" + tgt).
 }.
 
-set fsModule:copyDir to {
+set module:copyDir to {
     parameter src, tgt.
     parameter accept is {parameter f. return true.}.
-    parameter onAccept is fsModule:copyOnly@.
+    parameter onAccept is module:copyOnly@.
     parameter srcVol is archive.
     parameter tgtVol is core:volume.
 
@@ -449,7 +464,7 @@ set fsModule:copyDir to {
         parameter f.
 
         logger:debug("Performing copy operation on " + fs:toPathString(path(f))).
-        logger:debug("src: " + src + ", tgt: " + tgt + ", srcVol: " + srcVol:name + ", tgtVol: " + tgtVol:name).
+        logger:debugf("src: %s, tgt: %s, srcVol: %s, tgtVol: %s", src, tgt, srcVol:name, tgtVol:name).
 
         local fPath is fs:pathAfter(f, srcVol:open(src)).
         logger:debug("fPath: " + fPath).
@@ -477,7 +492,7 @@ set fsModule:copyDir to {
 }.
 
 
-set fsModule:compile to {
+set module:compile to {
     parameter vol, retVol, start.
 
     local compiler is {
@@ -487,37 +502,37 @@ set fsModule:compile to {
         switch to retVol.
     }.
 
-    fsModule:visit(vol, start, fsModule:isSrc@, compiler@).
+    module:visit(vol, start, module:isSrc@, compiler@).
 }.
 
-set fsModule:is to {
+set module:is to {
     parameter type, f.
 
     local filePath is path(f).
 
-    logger:debug(fsModule:toPathString(filePath) + " is of file type " + type + ": " + (filePath:extension = type)).
+    logger:debugf("'%s' is of filetype '%s': %s ", module:toPathString(filePath), type, (filePath:extension = type)).
     return filePath:extension = type.
 }.
 
-set fsModule:in to {
+set module:in to {
     parameter types, f.
 
     local filePath is path(f).
 
-    logger:debug(fsModule:toPathString(filePath) + " is in file type list " + types + ": " + (types:contains(filePath:extension))).
+    logger:debugf("%s is in file type list %s: %s", module:toPathString(filePath), types, (types:contains(filePath:extension))).
 
     return types:contains(filePath:extension).
 }.
 
-set fsModule:isSrc to fsModule:is@:bind(fsModule:type:ks:ext).
-set fsModule:isCompiled to fsModule:is@:bind(fsModule:type:ksm:ext).
-set fsModule:dataTypes to list(fsModule:type:txt:ext, fsModule:type:raw:ext, fsModule:type:json:ext, fsModule:type:csv:ext).
-set fsModule:isData to fsModule:in@:bind(fsModule:dataTypes).
+set module:isSrc to module:is@:bind(module:type:ks:ext).
+set module:isCompiled to module:is@:bind(module:type:ksm:ext).
+set module:dataTypes to list(module:type:log:ext, module:type:txt:ext, module:type:raw:ext, module:type:json:ext, module:type:csv:ext).
+set module:isData to module:in@:bind(module:dataTypes).
 
-set fsModule:printTree to {
+set module:printTree to {
     parameter vol, start, printer is logger:info.
     walk(vol, start, printer).
 }.
 
-global fs is fsModule.
+global fs is module.
 register("fs", fs, {return defined fs.}).

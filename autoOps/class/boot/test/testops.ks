@@ -30,21 +30,21 @@ tst(defaultGroup, "ensure_ops_starts_with_no_context_or_tasks", {
 
 tst(defaultGroup, "ensure_ops_file_parsed_correctly", {
     ops:load:file(core:volume, "/test/ops.ops").
-    assert(ops:opsHandler:data:tasks:length = 4, console:fmt("Expected 4 tasks, received: %s", ops:opsHandler:data:tasks:length)).
-    assert(ops:opsHandler:data:tasks[0]:name = "test", console:fmt("Expected 0th task to be named test, received: %s", ops:opsHandler:data:tasks[0]:name)).
-    assert(ops:opsHandler:data:tasks[0]:args:length = 0, console:fmt("Expected 0th task to have 0 args, received: %s", ops:opsHandler:data:tasks[0]:args:length)).
-    assert(ops:opsHandler:data:tasks[1]:name = "test", console:fmt("Expected 1st task to be named test, received: %s", ops:opsHandler:data:tasks[1]:name)).
-    assert(ops:opsHandler:data:tasks[1]:args:length = 1, console:fmt("Expected 1st task to have 1 arg, received: %s", ops:opsHandler:data:tasks[1]:args:length)).
-    assert(ops:opsHandler:data:tasks[1]:args[0] = "a", console:fmt("Expected 1st task to have 0tharg 'a', received: '%s'", ops:opsHandler:data:tasks[1]:args[0])).
-    assert(ops:opsHandler:data:tasks[2]:name = "test", console:fmt("Expected 2nd task to be named test, received: %s", ops:opsHandler:data:tasks[2]:name)).
-    assert(ops:opsHandler:data:tasks[2]:args:length = 2, console:fmt("Expected 2nd task to have 2 args, received: %s", ops:opsHandler:data:tasks[2]:args:length)).
-    assert(ops:opsHandler:data:tasks[2]:args[0] = "b", console:fmt("Expected 2nd task to have 0th arg 'b', received: '%s'", ops:opsHandler:data:tasks[2]:args[0])).
-    assert(ops:opsHandler:data:tasks[2]:args[1] = "c", console:fmt("Expected 2nd task to have 1st arg 'c', received: '%s'", ops:opsHandler:data:tasks[2]:args[1])).
-    assert(ops:opsHandler:data:tasks[3]:name = "test", console:fmt("Expected 3rd task to be named test, received: %s", ops:opsHandler:data:tasks[3]:name)).
-    assert(ops:opsHandler:data:tasks[3]:args:length = 3, console:fmt("Expected 3rd task to have 3 args, received: %s", ops:opsHandler:data:tasks[3]:args:length)).
-    assert(ops:opsHandler:data:tasks[3]:args[0] = "d", console:fmt("Expected 3rd task to have 0th arg 'd', received: '%s'", ops:opsHandler:data:tasks[3]:args[0])).
-    assert(ops:opsHandler:data:tasks[3]:args[1] = "e", console:fmt("Expected 3rd task to have 1st arg 'e', received: '%s'", ops:opsHandler:data:tasks[3]:args[1])).
-    assert(ops:opsHandler:data:tasks[3]:args[2] = "f", console:fmt("Expected 3rd task to have 2nd arg 'f', received: '%s'", ops:opsHandler:data:tasks[3]:args[2])).
+    assertf(ops:opsHandler:data:tasks:length = 4, "Expected 4 tasks, received: %s", ops:opsHandler:data:tasks:length).
+    assertf(ops:opsHandler:data:tasks[0]:name = "test", "Expected 0th task to be named test, received: %s", ops:opsHandler:data:tasks[0]:name).
+    assertf(ops:opsHandler:data:tasks[0]:args:length = 0, "Expected 0th task to have 0 args, received: %s", ops:opsHandler:data:tasks[0]:args:length).
+    assertf(ops:opsHandler:data:tasks[1]:name = "test", "Expected 1st task to be named test, received: %s", ops:opsHandler:data:tasks[1]:name).
+    assertf(ops:opsHandler:data:tasks[1]:args:length = 1, "Expected 1st task to have 1 arg, received: %s", ops:opsHandler:data:tasks[1]:args:length).
+    assertf(ops:opsHandler:data:tasks[1]:args[0] = "a", "Expected 1st task to have 0tharg 'a', received: '%s'", ops:opsHandler:data:tasks[1]:args[0]).
+    assertf(ops:opsHandler:data:tasks[2]:name = "test", "Expected 2nd task to be named test, received: %s", ops:opsHandler:data:tasks[2]:name).
+    assertf(ops:opsHandler:data:tasks[2]:args:length = 2, "Expected 2nd task to have 2 args, received: %s", ops:opsHandler:data:tasks[2]:args:length).
+    assertf(ops:opsHandler:data:tasks[2]:args[0] = "b", "Expected 2nd task to have 0th arg 'b', received: '%s'", ops:opsHandler:data:tasks[2]:args[0]).
+    assertf(ops:opsHandler:data:tasks[2]:args[1] = "c", "Expected 2nd task to have 1st arg 'c', received: '%s'", ops:opsHandler:data:tasks[2]:args[1]).
+    assertf(ops:opsHandler:data:tasks[3]:name = "test", "Expected 3rd task to be named test, received: %s", ops:opsHandler:data:tasks[3]:name).
+    assertf(ops:opsHandler:data:tasks[3]:args:length = 3, "Expected 3rd task to have 3 args, received: %s", ops:opsHandler:data:tasks[3]:args:length).
+    assertf(ops:opsHandler:data:tasks[3]:args[0] = "d", "Expected 3rd task to have 0th arg 'd', received: '%s'", ops:opsHandler:data:tasks[3]:args[0]).
+    assertf(ops:opsHandler:data:tasks[3]:args[1] = "e", "Expected 3rd task to have 1st arg 'e', received: '%s'", ops:opsHandler:data:tasks[3]:args[1]).
+    assertf(ops:opsHandler:data:tasks[3]:args[2] = "f", "Expected 3rd task to have 2nd arg 'f', received: '%s'", ops:opsHandler:data:tasks[3]:args[2]).
 },
 { //setup
     setup().
@@ -60,21 +60,21 @@ tst(defaultGroup, "ensure_ops_file_parsed_correctly", {
 
 tst(defaultGroup, "ensure_ops_text_parsed_correctly", {
     ops:load:ops(console:fmt("test%ntest:a%ntest:b:c%ntest:d:e:f")).
-    assert(ops:opsHandler:data:tasks:length = 4, console:fmt("Expected 4 tasks, received: %s", ops:opsHandler:data:tasks:length)).
-    assert(ops:opsHandler:data:tasks[0]:name = "test", console:fmt("Expected 0th task to be named test, received: %s", ops:opsHandler:data:tasks[0]:name)).
-    assert(ops:opsHandler:data:tasks[0]:args:length = 0, console:fmt("Expected 0th task to have 0 args, received: %s", ops:opsHandler:data:tasks[0]:args:length)).
-    assert(ops:opsHandler:data:tasks[1]:name = "test", console:fmt("Expected 1st task to be named test, received: %s", ops:opsHandler:data:tasks[1]:name)).
-    assert(ops:opsHandler:data:tasks[1]:args:length = 1, console:fmt("Expected 1st task to have 1 arg, received: %s", ops:opsHandler:data:tasks[1]:args:length)).
-    assert(ops:opsHandler:data:tasks[1]:args[0] = "a", console:fmt("Expected 1st task to have 0tharg 'a', received: '%s'", ops:opsHandler:data:tasks[1]:args[0])).
-    assert(ops:opsHandler:data:tasks[2]:name = "test", console:fmt("Expected 2nd task to be named test, received: %s", ops:opsHandler:data:tasks[2]:name)).
-    assert(ops:opsHandler:data:tasks[2]:args:length = 2, console:fmt("Expected 2nd task to have 2 args, received: %s", ops:opsHandler:data:tasks[2]:args:length)).
-    assert(ops:opsHandler:data:tasks[2]:args[0] = "b", console:fmt("Expected 2nd task to have 0th arg 'b', received: '%s'", ops:opsHandler:data:tasks[2]:args[0])).
-    assert(ops:opsHandler:data:tasks[2]:args[1] = "c", console:fmt("Expected 2nd task to have 1st arg 'c', received: '%s'", ops:opsHandler:data:tasks[2]:args[1])).
-    assert(ops:opsHandler:data:tasks[3]:name = "test", console:fmt("Expected 3rd task to be named test, received: %s", ops:opsHandler:data:tasks[3]:name)).
-    assert(ops:opsHandler:data:tasks[3]:args:length = 3, console:fmt("Expected 3rd task to have 3 args, received: %s", ops:opsHandler:data:tasks[3]:args:length)).
-    assert(ops:opsHandler:data:tasks[3]:args[0] = "d", console:fmt("Expected 3rd task to have 0th arg 'd', received: '%s'", ops:opsHandler:data:tasks[3]:args[0])).
-    assert(ops:opsHandler:data:tasks[3]:args[1] = "e", console:fmt("Expected 3rd task to have 1st arg 'e', received: '%s'", ops:opsHandler:data:tasks[3]:args[1])).
-    assert(ops:opsHandler:data:tasks[3]:args[2] = "f", console:fmt("Expected 3rd task to have 2nd arg 'f', received: '%s'", ops:opsHandler:data:tasks[3]:args[2])).
+    assertf(ops:opsHandler:data:tasks:length = 4, "Expected 4 tasks, received: %s", ops:opsHandler:data:tasks:length).
+    assertf(ops:opsHandler:data:tasks[0]:name = "test", "Expected 0th task to be named test, received: %s", ops:opsHandler:data:tasks[0]:name).
+    assertf(ops:opsHandler:data:tasks[0]:args:length = 0, "Expected 0th task to have 0 args, received: %s", ops:opsHandler:data:tasks[0]:args:length).
+    assertf(ops:opsHandler:data:tasks[1]:name = "test", "Expected 1st task to be named test, received: %s", ops:opsHandler:data:tasks[1]:name).
+    assertf(ops:opsHandler:data:tasks[1]:args:length = 1, "Expected 1st task to have 1 arg, received: %s", ops:opsHandler:data:tasks[1]:args:length).
+    assertf(ops:opsHandler:data:tasks[1]:args[0] = "a", "Expected 1st task to have 0tharg 'a', received: '%s'", ops:opsHandler:data:tasks[1]:args[0]).
+    assertf(ops:opsHandler:data:tasks[2]:name = "test", "Expected 2nd task to be named test, received: %s", ops:opsHandler:data:tasks[2]:name).
+    assertf(ops:opsHandler:data:tasks[2]:args:length = 2, "Expected 2nd task to have 2 args, received: %s", ops:opsHandler:data:tasks[2]:args:length).
+    assertf(ops:opsHandler:data:tasks[2]:args[0] = "b", "Expected 2nd task to have 0th arg 'b', received: '%s'", ops:opsHandler:data:tasks[2]:args[0]).
+    assertf(ops:opsHandler:data:tasks[2]:args[1] = "c", "Expected 2nd task to have 1st arg 'c', received: '%s'", ops:opsHandler:data:tasks[2]:args[1]).
+    assertf(ops:opsHandler:data:tasks[3]:name = "test", "Expected 3rd task to be named test, received: %s", ops:opsHandler:data:tasks[3]:name).
+    assertf(ops:opsHandler:data:tasks[3]:args:length = 3, "Expected 3rd task to have 3 args, received: %s", ops:opsHandler:data:tasks[3]:args:length).
+    assertf(ops:opsHandler:data:tasks[3]:args[0] = "d", "Expected 3rd task to have 0th arg 'd', received: '%s'", ops:opsHandler:data:tasks[3]:args[0]).
+    assertf(ops:opsHandler:data:tasks[3]:args[1] = "e", "Expected 3rd task to have 1st arg 'e', received: '%s'", ops:opsHandler:data:tasks[3]:args[1]).
+    assertf(ops:opsHandler:data:tasks[3]:args[2] = "f", "Expected 3rd task to have 2nd arg 'f', received: '%s'", ops:opsHandler:data:tasks[3]:args[2]).
 }).
 
 // test ops file gets renamed when loaded

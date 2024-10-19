@@ -104,7 +104,7 @@ local signal is link:getfield("comm signal").
 if signal <> "0.00" {
     // check for a new bootscript
     if archive:exists(fs:ship:boot) {
-        logger:info( "new system boot file received").
+        logger:info("new system boot file received").
         movepath("0:" + fs:ship:boot, "/boot/boot.ksm").
         set core:bootfilename to "/boot/boot.ksm".
         wait 1.

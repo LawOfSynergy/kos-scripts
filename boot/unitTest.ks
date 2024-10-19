@@ -164,6 +164,7 @@ if post {
 
     print "Beginning remaining unit testing".
     validateModules().
+    fs:reqDirCheck().
 
     local logger is console:logger("boot").
     set boot:logger to logger.

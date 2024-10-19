@@ -244,5 +244,25 @@ global assert is {
     }
 }.
 
+global assertf is {
+    parameter condition, message.
+
+    local result is "".
+    local s is message.
+    local i is 0.
+    local param is "undefined".
+    until i >= s:length {
+        if console:fmtUtils:consumeParam(s, i) {
+            parameter p.
+            set param to p.
+        }
+        local sub is console:fmtUtils:substitute(s, i, param).
+        set result to result + sub:value.
+        set i to i + sub:inc.
+    }
+
+    assert(condition, result).
+}.
+
 global test is testModule.
 register("test", test, {return defined test and defined assert and defined mock.}, {unset test. unset assert. unset mock.}).

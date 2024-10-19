@@ -2,11 +2,11 @@
 
 require("console").
 
-local persistModule is lex().
+local module is lex().
 local logger is console:logger("persist").
-set persistModule:logger to logger.
+set module:logger to logger.
 
-set persistModule:handler to lex().
+set module:handler to lex().
 
 local function sanitize {
     parameter ref, visited.
@@ -33,10 +33,10 @@ local function sanitize {
     }
     return ref.
 }
-set persistModule:sanitize to sanitize@.
+set module:sanitize to sanitize@.
 
 //create and register a basic lex-backed handler with default get/set logic
-set persistModule:basicDataHandler to {
+set module:basicDataHandler to {
     parameter name, 
         readOnCreate is false, 
         data is lex(), 
@@ -49,7 +49,7 @@ set persistModule:basicDataHandler to {
         },
         filepath is "/mem/" + name + ".json".
 
-    local result is persistModule:handlerFor(
+    local result is module:handlerFor(
         name, 
         getDelegate, 
         setDelegate,
@@ -77,7 +77,7 @@ set persistModule:basicDataHandler to {
 }.
 
 //create and register a handler for persisting a new lexicon to disk
-set persistModule:handlerFor to {
+set module:handlerFor to {
     parameter name, getDelegate, setDelegate, filepath is "/mem/" + name + ".json".
 
     local result is lex(
@@ -85,65 +85,65 @@ set persistModule:handlerFor to {
         "filepath", filepath,
         "readFromDisk", {
             if core:volume:exists(filepath) {        
-                logger:debug(console:fmt("Loading contents of '%s':%n%s", filepath, readJson(filepath))).        
+                logger:debugf("Loading contents of '%s':%n%s", filepath, readJson(filepath)).        
                 setDelegate(readJson(filepath)).
             } else {
-                logger:warn(console:fmt("Could not find '%s', data not set", filepath)).
+                logger:warnf("Could not find '%s', data not set", filepath).
             }
         },
         "writeToDisk", {
             local contents is sanitize(getDelegate(), list()).
-            logger:debug(console:fmt("Writing contents to '%s':%n%s", filepath, contents)).
+            logger:debugf("Writing contents to '%s':%n%s", filepath, contents).
             writejson(contents, filepath).
         }
     ).
 
-    set persistModule["handler"][name] to result.
+    set module["handler"][name] to result.
     return result.
 }.
 
 local ALL is "persistModuleALLmarker".
 
-set persistModule:write to {
+set module:write to {
     parameter identifier is ALL.
 
     if identifier:isType("Enumerable") {
         local it is identifier:iterator.
 
         until not it:next() {
-            if it:value:isType("String") persistModule:handler[it:value]:writeToDisk().
+            if it:value:isType("String") module:handler[it:value]:writeToDisk().
             else logger:error("Expected string in enumerable, received " + it:value).
         }
     } else if identifier:isType("String") {
         if identifier = ALL {
-            for handler in persistModule:handler:values {
+            for handler in module:handler:values {
                 handler:writeToDisk().
             }
         } else {
-            persistModule:handler[identifier]:writeToDisk().
+            module:handler[identifier]:writeToDisk().
         }
     } else {
         logger:error("Expected string or enumerable<string>, received " + identifier).
     }
 }.
 
-set persistModule:read to {
+set module:read to {
     parameter identifier is ALL.
 
     if identifier:isType("Enumerable") {
         local it is identifier:iterator.
 
         until not it:next() {
-            if it:value:isType("String") persistModule:handler[it:value]:readFromDisk().
+            if it:value:isType("String") module:handler[it:value]:readFromDisk().
             else logger:error("Expected string in enumerable, received " + it:value).
         }
     } else if identifier:isType("String") {
         if identifier = ALL {
-            for handler in persistModule:handler:values {
+            for handler in module:handler:values {
                 handler:readFromDisk().
             }
         } else {
-            persistModule:handler[identifier]:readFromDisk().
+            module:handler[identifier]:readFromDisk().
         }
     } else {
         logger:error("Expected string or enumerable<string>, received " + identifier).
@@ -151,10 +151,10 @@ set persistModule:read to {
 }.
 
 // init common namespace
-set persistModule:common to persistModule:basicDataHandler("common", true).
-set persistModule:declare to persistModule:common:declare.
-set persistModule:set to persistModule:common:set.
-set persistModule:get to persistModule:common:get.
+set module:common to module:basicDataHandler("common", true).
+set module:declare to module:common:declare.
+set module:set to module:common:set.
+set module:get to module:common:get.
 
-global persist is persistModule.
+global persist is module.
 register("persist", persist, {return defined persist.}).

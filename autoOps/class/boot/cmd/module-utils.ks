@@ -48,3 +48,7 @@ global function validateModules {
         ensureModuleIsLoaded(key).
     }
 }
+
+global function getModules {
+    return modules:copy.
+}

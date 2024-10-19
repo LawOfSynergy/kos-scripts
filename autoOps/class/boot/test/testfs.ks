@@ -30,7 +30,7 @@ tst(defaultGroup, "ensure_path_constants_map_correctly", {
     local function validate {
         parameter name, value, expected.
 
-        assert(value = expected, console:fmt("expected '%s' = '%s', received: %s", name, expected, value)).
+        assertf(value = expected, "expected '%s' = '%s', received: %s", name, expected, value).
     }
 
     validate("fs:ksc:root", fs:ksc:root, "/autoOps").

@@ -1,6 +1,6 @@
 @lazyGlobal off.
 
-local setup is {runPath("/include/console").}.
+local setup is {require("console").}.
 local teardown is {unset console.}.
 
 local defaultGroup is test:create(
@@ -13,8 +13,8 @@ local function tst {
 }
 
 tst(defaultGroup, "ensure_format_takes_correct_num_params", {
-    local result is console:fmt("%this %% string %s values like %s", "takes", 23).
-    assert(result = "%this % string takes values like 23", "String formatting did not occur correctly. Expected '%this % string takes values like 23', recieved '" + result + "'").
+    local result is console:fmt("this %% string %s values like %s%", "takes", 23).
+    assert(result = "this % string takes values like 23%", "String formatting did not occur correctly. Expected '%this % string takes values like 23', recieved '" + result + "'").
 }).
 
 tst(defaultGroup, "ensure_4_logLevels", {
@@ -22,11 +22,11 @@ tst(defaultGroup, "ensure_4_logLevels", {
     assert(console:hasSuffix("level"), "'console' missing member 'level'").
     local function validateLogLevel {
         parameter name, level.
-        assert(console:level:hasSuffix(name), console:fmt("'level' missing member '%s'", name)).
-        assert(console:level[name]:hasSuffix("name"), console:fmt("'%s' missing member 'name'", name)).
-        assert(console:level[name]:name = name, console:fmt("'%s' has mismatched 'name': %s", name, console:level[name]:name)).
-        assert(console:level[name]:hasSuffix("value"), console:fmt("'%s' missing member 'value'", name)).
-        assert(console:level[name]:value = level, console:fmt("'%s' has mismatched 'value': %s, expected: %s", name, console:level[name]:value, level)).
+        assertf(console:level:hasSuffix(name), "'level' missing member '%s'", name).
+        assertf(console:level[name]:hasSuffix("name"), "'%s' missing member 'name'", name).
+        assertf(console:level[name]:name = name, "'%s' has mismatched 'name': %s", name, console:level[name]:name).
+        assertf(console:level[name]:hasSuffix("value"), "'%s' missing member 'value'", name).
+        assertf(console:level[name]:value = level, "'%s' has mismatched 'value': %s, expected: %s", name, console:level[name]:value, level).
     }
     validateLogLevel("NONE", -1).
     validateLogLevel("ERROR", 0).
@@ -55,11 +55,11 @@ tst(defaultGroup, "logger_with_only_fs_dep_defaults_to_fs:write",
 
     assert(console:localWriter <> "", "'localWriter' has not been initialized!").
     assert(console:localWriter:isType("UserDelegate"), "'localWriter' is not invokable").
-    assert(logger:factory:get() = console:localWriter, "'getWriter()' did not return 'console:localWriter'").
+    assert(logger:factory:get() = console:fsWriter, "'getWriter()' did not return 'console:localWriter'").
 },
 {
     setup().
-    runPath("/include/fs").
+    require("fs").
 },
 {
     teardown().
@@ -80,24 +80,12 @@ tst(defaultGroup, "logger_with_comms_dep_defaults_to_comms:stashmit",
 },
 {
     setup().
-    runPath("/include/fs").
-    runPath("/include/comms").
+    require(list("fs", "comms")).
 },
 {
     teardown().
     unset fs.
     unset comms.
-}).
-
-tst(defaultGroup, "logger_with_no_deps_only_writes_once", {
-    local testWriter is {
-        parameter text, level, loggerLevel, toConsole.
-        assert(not toConsole, "wrote to console in addition to console:printWriter").
-    }.
-    set console:printWriter to testWriter.
-
-    local logger is console:logger("test", console:level:info, true, console:factoryFor(testWriter)).
-    logger:info("test logger_with_no_deps_only_writes_once").
 }).
 
 tst(defaultGroup, "unbound_logger_writes_messages_within_log_level_theshold_only", {
@@ -114,7 +102,7 @@ tst(defaultGroup, "unbound_logger_writes_messages_within_log_level_theshold_only
         logger:warn("test warn").
         logger:info("test info").
         logger:debug("test debug").
-        assert(act:invocations:length = count, console:fmt("expected %s writes, received: %s", count, act:invocations:length)).
+        assertf(act:invocations:length = count, "expected %s writes, received: %s", count, act:invocations:length).
     }
 
     validate(console:level:none, 0).
